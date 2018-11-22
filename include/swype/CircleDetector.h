@@ -1,0 +1,49 @@
+//
+// Created by babay on 08.12.2017.
+//
+
+#ifndef PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
+#define PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
+
+
+#include "swype/VectorExplained.h"
+#include "swype/ValueWithDefect.h"
+
+#define SHIFTS 64
+
+#define MAX_CIRCLE_DURATION_MS 2000
+
+#define MIN_CIRCLE_AREA 0.14
+#define MAX_DEVIATION 0.09
+#define MIN_AREA_BY_P2_TO_CIRCLE 0.67
+
+class CircleDetector {
+public:
+    void AddShift(const VectorExplained &shift);
+
+    bool IsCircle() const;
+
+    void Reset() {
+        pos_ = 0;
+        total_ = 0;
+    }
+
+    void SetRelaxed(bool relaxed);
+
+    void Clear();
+
+private:
+    ValueWithDefect CalculateArea(int amount, ValueWithDefect &perResult) const;
+
+    VectorExplained shifts_[SHIFTS];
+    int pos_ = 0;
+    int total_ = 0;
+
+    double _minCircleArea = MIN_CIRCLE_AREA;
+    double _maxDeviation = MAX_DEVIATION;
+    double _minAreaByP2toCircle = MIN_AREA_BY_P2_TO_CIRCLE;
+    bool _relaxed = true;
+};
+
+
+#endif //PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
