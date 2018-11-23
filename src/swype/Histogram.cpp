@@ -2,6 +2,7 @@
 // Created by babay on 10.08.2018.
 //
 
+#include <vector>
 #include <opencv2/imgproc.hpp>
 #include "swype/Histogram.h"
 #include "swype/GaussianWindowCalc.h"
@@ -103,11 +104,11 @@ void Histogram::CreateContrastWindow(cv::OutputArray _dst, cv::Size winSize, int
     int rows = dst.rows, cols = dst.cols;
     GaussianWindowCalc calc;
 
-    double wc[cols];
-    double wr[rows];
+    std::vector<double> wc(cols);
+    std::vector<double> wr(rows);
 
-    calc.calculate(wc, cols, cols * 0.1);
-    calc.calculate(wr, rows, rows * 0.1);
+    calc.calculate(wc.data(), cols, cols * 0.1);
+    calc.calculate(wr.data(), rows, rows * 0.1);
 
     if (dst.depth() == CV_32F) {
         for (int i = 0; i < rows; i++) {
