@@ -15,20 +15,25 @@ public:
 
     Vector(double _x, double _y) : _x(_x), _y(_y), _mod(0) {}
 
-    inline void operator+=(Vector other) {
+    inline void operator+=(const Vector &other) {
         _x += other._x;
         _y += other._y;
     };
 
-    inline Vector operator+(Vector other) {
+    inline void operator*=(const double mul) {
+        _x *= mul;
+        _y *= mul;
+    };
+
+    inline Vector operator+(const Vector &other) const {
         return Vector(_x + other._x, _y + other._y);
     }
 
-    inline double operator*(Vector other) {
+    inline double operator*(const Vector &other) const {
         return _x * other._x + _y * other._y;
     }
 
-    inline void operator-=(Vector other) {
+    inline void operator-=(const Vector &other) {
         _x -= other._x;
         _y -= other._y;
     }

@@ -33,14 +33,11 @@ ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sou
 }
 
 VectorExplained
-ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp, int &initialX,
-                                int &initialY) {
+ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
     if (_tickFrame.empty()) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         createHanningWindow(_hann, _tickFrame.size(), CV_64F); //  create Hanning window
         _tickTock = false;
-        initialX = 0;
-        initialY = 0;
         return VectorExplained();
     }
 
@@ -54,8 +51,6 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp, int &ini
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         shift = phaseCorrelate(_tockFrame, _tickFrame, _hann); // we calculate a phase offset vector
     }
-    initialX = static_cast<int>(shift.x * 128);
-    initialY = static_cast<int>(shift.y * 128);
     VectorExplained scaledShift;
     scaledShift.SetMul(shift, _xMult, _yMult);
     VectorExplained windowedShift = scaledShift;
@@ -78,7 +73,7 @@ void ShiftDetector::SetBaseFrame(const cv::Mat &frame) {
     _tickTock = false;
 }
 
-VectorExplained ShiftDetector::ShiftToBaseFrame(cv::Mat &frame, uint timestamp) {
+VectorExplained ShiftDetector::ShiftToBaseFrame(const cv::Mat &frame, uint timestamp) {
     frame.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
 
     if (_hann.empty()) {
@@ -123,6 +118,3 @@ ShiftDetector::log2(uint timestamp, const cv::Point2d &shift, VectorExplained &s
 void ShiftDetector::SetRelativeDefect(double defect) {
     _relativeDefect = defect;
 }
-
-
-

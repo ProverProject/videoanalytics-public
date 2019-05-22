@@ -24,6 +24,17 @@ public:
 
     void FillResult(int &status, int &index, int &x, int &y, int &message, int &debug) const;
 
+    void FillResult(int &status, int &index, int &message) const;
+
+    /**
+     * return current vector size and defect
+     * @param x
+     * @param y
+     * @param dx
+     * @param dy
+     */
+    void GetCurrentVector(float &x, float &y, float &dx, float &dy);
+
     /*
      *    1 -- swype code completed
      *    0 -- processing swype code

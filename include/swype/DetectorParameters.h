@@ -27,8 +27,10 @@ public:
     }
 
     void Log() const {
-        LOGI_NATIVE("DetectorParameters: v: (%.4f, %.4f), target: %.2f, relaxed: %d, codeLength: %d-%d",
-        _speedMultX, _speedMultY, _targetRadius, _relaxed, _minSwypeCodeLength, _maxSwypeCodeLength);
+        LOGI_NATIVE(
+                "DetectorParameters: v: (%.4f, %.4f), target: %.2f, relaxed: %d, codeLength: %d-%d",
+                _speedMultX, _speedMultY, _targetRadius, _relaxed, _minSwypeCodeLength,
+                _maxSwypeCodeLength);
     }
 
     void SetDetectorDetect(double _detectorDetect) {

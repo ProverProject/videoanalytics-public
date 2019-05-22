@@ -3,50 +3,61 @@
 //
 
 #include "swype/swype_detect.h"
-#include "swype/SwypeCodeDetectorBaseFrame.h"
 #include "swype/SwypeCodeDetector.h"
 
 
 unsigned int SwypeCodeDetector::counter = 0;
 
 void SwypeCodeDetector::FillResult(int &status, int &index, int &x, int &y, int &message, int &debug) const {
-    index = _currentStep + 1;
     x = (int) (_resultX * 1024);
     y = (int) (_resultY * 1024);
 
     debug = (int) (_stepDetector._current._defectX * 1024);
     debug = debug << 16;
-    debug += _stepDetector._current._defectY * 1024;
+    debug += (int) (_stepDetector._current._defectY * 1024);
 
-    message = 0;
+    FillResult(status, index, message);
+}
+
+
+void SwypeCodeDetector::FillResult(int &status, int &index, int &message) const {
+    index = _currentStep + 1;
 
     switch (SwypeCodeDetector::_status){
         case -1:
             status = DetectorState::WaitingForCircle;
-            message = 2;
+            message = Message::SwypeFailOutOfBounds;
             break;
 
         case -2:
             status = DetectorState::WaitingForCircle;
-            message = 3;
+            message = Message::SwypeFailTimeout;
             break;
 
         case 1:
             status = DetectorState::SwypeCodeDone;
-            message = 0;
+            message = Message::None;
             break;
 
         case 2:
             status = DetectorState::WaitingToStartSwypeCode;
-            message = 0;
+            message = Message::None;
             break;
 
         case 0:
         default:
             status = DetectorState::DetectingSwypeCode;
-            message = 0;
+            message = Message::None;
             break;
     }
+}
+
+
+void SwypeCodeDetector::GetCurrentVector(float &x, float &y, float &dx, float &dy) {
+    x = static_cast<float>(_resultX);
+    y = static_cast<float>(_resultY);
+    dx = _stepDetector._current._defectX;
+    dy = _stepDetector._current._defectY;
 }
 
 SwypeCodeDetector::SwypeCodeDetector(SwipeCode &code, DetectorParameters parameters,

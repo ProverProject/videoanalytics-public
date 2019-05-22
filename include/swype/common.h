@@ -36,6 +36,38 @@
 #define ACTUAL_SWYPE_HELPER_VERSION 2
 #define ACTUAL_SWYPE_DETECTOR_VERSION 2
 
+
+enum Message {
+    /**
+     * no message
+     */
+            None = 0,
+    /**
+     * Luminance or contrast low
+     */
+            LuminanceLow = 1,
+    /**
+     * Swype code failed 'cause we've get out of detection bounds
+     */
+            SwypeFailOutOfBounds = 2,
+    /**
+     * Swype code failed 'cause of timeout
+     */
+            SwypeFailTimeout = 3,
+    /**
+     * we've got a closed curve, it's round enough, but too small
+     */
+            CircleTooSmall = 4,
+    /**
+     * we've got closed curve, it's not round enough
+     */
+            ClosedCurveNotRoundEnough = 8,
+    /**
+     * we've got closed curve, it too small and not round enough
+     */
+            ClosedCurveSmallAndNotRoundEnough = 12,
+};
+
 //#define BUILD_COLOR_QUANTUM
 
 #endif

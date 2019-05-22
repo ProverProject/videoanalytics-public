@@ -220,4 +220,3 @@ void BoundsChecker::SetTargetRadius(float targetRadius, float targetRadiusOther)
     _targetRadius = targetRadius;
     _targetRadiusOther = targetRadiusOther;
 }
-

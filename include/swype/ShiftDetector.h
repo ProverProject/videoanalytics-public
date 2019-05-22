@@ -19,10 +19,17 @@ public:
 
     void SetDetectorSize(int detectorWidth, int detectorHeight, double sourceAspectRatio);
 
-    VectorExplained
-    ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp, int &initialX, int &initialY);
+    /**
+     * detects shift;
+     * @param frame_i - [in] current frame
+     * @param timestamp - [in] current frame timestamp
+     * @return
+     */
 
-    VectorExplained ShiftToBaseFrame(cv::Mat &frame, uint timestamp);
+    VectorExplained
+    ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp);
+
+    VectorExplained ShiftToBaseFrame(const cv::Mat &frame, uint timestamp);
 
     void SetBaseFrame(const cv::Mat &frame);
 
@@ -63,6 +70,7 @@ private:
 
     double _relativeDefect;// relaxed ? DEFECT : DEFECT_CLIENT
 };
+
 
 
 #endif //SWYPE_SHIFTDETECTOR_H

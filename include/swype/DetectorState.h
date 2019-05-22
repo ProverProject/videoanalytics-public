@@ -10,6 +10,7 @@
 #include "swype/SwipeCode.h"
 #include "swype/settings.h"
 
+
 class DetectorState {
 public:
     enum State {
@@ -26,7 +27,7 @@ public:
         /**
          * We've got circular move and waiting 1500 ms to start swype-code detection
          */
-        WaitingToStartSwypeCode = 2,
+                WaitingToStartSwypeCode = 2,
 
         /**
          * swype-code detection in progress
@@ -76,6 +77,7 @@ private:
     uint _startTimestamp = 0;
     uint _maxStateEndTime = static_cast<uint>(-1);
 };
+
 
 
 #endif //PROVER_MVP_ANDROID_DETECTORSTATUS_H
