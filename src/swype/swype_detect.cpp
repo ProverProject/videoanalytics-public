@@ -98,6 +98,7 @@ SwypeDetect::processMatExt(const cv::Mat &frame, uint timestamp, int &state, int
                            int &actualResultCoordinates) {
     message = Message::None;
     if (shouldIgnoreFrame(frame, state, message)) {
+        fillEmptyResponse(resultCoordinates, resultCoordinatesLength, actualResultCoordinates);
         return;
     }
 
@@ -198,4 +199,23 @@ SwypeDetect::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &message) {
     }
 
     return false;
+}
+
+void SwypeDetect::fillEmptyResponse(float *resultCoordinates,
+                                    int resultCoordinatesLength, int &actualResultCoordinates) {
+    resultCoordinates[0] = 0;
+    resultCoordinates[1] = 0;
+    if (resultCoordinatesLength >= 4) {
+        resultCoordinates[2] = 0;
+        resultCoordinates[3] = 0;
+        if (resultCoordinatesLength >= 6) {
+            resultCoordinates[4] = 0;
+            resultCoordinates[5] = 0;
+            actualResultCoordinates = 6;
+        } else {
+            actualResultCoordinates = 4;
+        }
+    } else {
+        actualResultCoordinates = 2;
+    }
 }

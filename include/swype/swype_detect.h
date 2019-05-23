@@ -263,6 +263,8 @@ private:
 
     bool shouldIgnoreFrame(const cv::Mat &frame, int &state, int &message);
 
+    void fillEmptyResponse(float *resultCoordinates, int resultCoordinatesLength, int &actualResultCoordinates);
+
     SwipeCode _swypeCode;//we have swype code or we will wait swype code
 
     int _state; //state S
