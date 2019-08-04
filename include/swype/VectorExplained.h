@@ -170,6 +170,11 @@ public:
     double _defectX2sum = 0;
     double _defectY2sum = 0;
 
+    void toFloatArray(float *output) {
+        output[0] = static_cast<float>(_x);
+        output[1] = static_cast<float>(_y);
+    }
+
 private:
     void CalculateExplained();
 };

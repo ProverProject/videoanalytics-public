@@ -8,9 +8,11 @@
 #include "swype/VectorExplained.h"
 #include "swype/settings.h"
 
-class SwipeCode {
+class SwypeCode {
 public:
-    inline SwipeCode() {}
+    inline SwypeCode() {
+        _length = 0;
+    }
 
     inline void Init(std::string swype) {
         if (swype == "") {
@@ -24,6 +26,52 @@ public:
             char tmp[17];
             FillDirectionsString(tmp, 17);
             LOGI_NATIVE("Set swype code: %s, directions: %s", swype.c_str(), tmp);
+        }
+    }
+
+    inline void Init(const char *chars, int length) {
+        if (length == 0) {
+            _length = 0;
+        } else if (chars[0] == '5') {
+            SetSwypeV1(chars, length);
+        } else if (chars[0] == '*') {
+            SetSwypeV2(chars, length);
+        }
+        if (logLevel > 0) {
+            char tmp[17];
+            FillDirectionsString(tmp, 17);
+            char tempSrc[17];
+            memcpy(tempSrc, chars, length);
+            LOGI_NATIVE("Set swype code: %s, directions: %s", tempSrc, tmp);
+        }
+    }
+
+    SwypeCode(const char *chars, unsigned int length) {
+        if (length == 0) {
+            _length = 0;
+        } else if (chars[0] == '5') {
+            SetSwypeV1(chars, length);
+        } else if (chars[0] == '*') {
+            SetSwypeV2(chars, length);
+        }
+        if (logLevel > 0) {
+            char tmp[17];
+            FillDirectionsString(tmp, 17);
+            char tempSrc[17];
+            memcpy(tempSrc, chars, length);
+            LOGI_NATIVE("Set swype code: %s, directions: %s", tempSrc, tmp);
+        }
+    }
+
+    SwypeCode(unsigned int _length, const int *directions) : _length(_length) {
+        for (uint i = 0; i < _length; ++i) {
+            _directions[i] = (char) directions[i];
+        }
+
+        if (logLevel > 0) {
+            char tmp[17];
+            FillDirectionsString(tmp, 17);
+            LOGI_NATIVE("Set swype code directions: %s", tmp);
         }
     }
 
@@ -53,7 +101,7 @@ public:
         }
     }
 
-    virtual bool Equals(const SwipeCode &other) const {
+    virtual bool Equals(const SwypeCode &other) const {
         if (_length != other._length)
             return false;
         for (unsigned int i = 0; i < _length; ++i) {
@@ -63,7 +111,7 @@ public:
         return true;
     }
 
-    bool StartsWith(const SwipeCode &other) const {
+    bool StartsWith(const SwypeCode &other) const {
         if (_length < other._length)
             return false;
         for (unsigned int i = 0; i < other._length; ++i) {
@@ -73,7 +121,7 @@ public:
         return true;
     }
 
-    void SetCode(const SwipeCode &src) {
+    void SetCode(const SwypeCode &src) {
         memcpy(_directions, src._directions, 17);
         _length = src._length;
     }
@@ -104,6 +152,31 @@ private:
 
         for (uint i = 0; i < _length; ++i) {
             _directions[i] = swype.at(i + 1) - '0';
+        }
+    }
+
+    void SetSwypeV1(const char *chars, unsigned int length) {
+        _length = length - 1;
+        if (_length > 16)
+            _length = 16;
+        int current, prev;
+        VectorExplained tmp;
+        prev = chars[0] - '0';
+        for (uint i = 0; i < _length; i++) {
+            current = chars[i + 1] - '0';
+            tmp.SetSwipePoints(prev, current);
+            _directions[i] = (char) tmp._direction;
+            prev = current;
+        }
+    }
+
+    void SetSwypeV2(const char *chars, unsigned int length) {
+        _length = length - 1;
+        if (_length > 16)
+            _length = 16;
+
+        for (uint i = 0; i < _length; ++i) {
+            _directions[i] = chars[i + 1] - '0';
         }
     }
 };

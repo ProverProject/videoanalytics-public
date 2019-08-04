@@ -8,7 +8,13 @@
 
 #include <opencv2/core/mat.hpp>
 #include "swype/SwypeStepDetector.h"
-#include "swype/SwipeCode.h"
+#include "swype/SwypeCode.h"
+
+struct SwypeStep {
+    unsigned int number;
+    char direction;
+    unsigned int maxDurationMs;
+};
 
 class SwypeCodeDetector {
 public:
@@ -17,26 +23,21 @@ public:
 
     SwypeCodeDetector() : _id(++counter), _stepDetector(_id) {};
 
-    SwypeCodeDetector(SwipeCode &code, DetectorParameters detectorParameters,
-                      unsigned int timestamp);
-
-    //virtual void NextFrame(cv::Mat &frame_i, uint timestamp) = 0;
-
     void FillResult(int &status, int &index, int &x, int &y, int &message, int &debug) const;
 
     void FillResult(int &status, int &index, int &message) const;
 
     /**
      * return current vector size and defect
-     * @param x
-     * @param y
-     * @param dx
-     * @param dy
+     * @param point - float[2] -- point coordinates, not null
+     * @param defect -- float[2] -- defect size (can be nullptr)
      */
-    void GetCurrentVector(float &x, float &y, float &dx, float &dy);
+    void GetCurrentVector(float *point, float *defect);
 
     /*
-     *    1 -- swype code completed
+     *    3 -- swype code not started (after circle, before swype code)
+     *    2 -- swype code completed
+     *    1 -- swype step completed
      *    0 -- processing swype code
      *    2 -- waiting to start swype code processing
      *   -1 -- swype code failed
@@ -46,28 +47,43 @@ public:
 
     unsigned int _id;
 
-    void
-    Init(SwipeCode &code, DetectorParameters parameters, unsigned int timestamp);
+    void Init(SwypeCode &code, DetectorParameters parameters, unsigned int timestamp);
 
+    void Init(DetectorParameters parameters);
 
-    void SetInstantStart();
+    void SetCurrentStep(SwypeStep step, unsigned int firstFrameTimestamp);
+
+    bool IsInitialised();
+
+    virtual void Reset(bool resetSwypeCode);
+
+    SwypeStep GetCurrentStep() { return _currentStep; };
+
+    bool IsStepFinished() { return _status == 1 || _status == 2; };
+
+    virtual void SetSwypeCode(SwypeCode &code);
+
+    void Start(uint startTimestamp);
 
 protected:
-    SwipeCode _code;
+
+    void AdvanceSwypeStep();
+
+    SwypeCode _code{};
 
     SwypeStepDetector _stepDetector;
 
     unsigned int _maxTimestamp = 0;
 
-    unsigned int _currentStep = 0;
+    SwypeStep _currentStep = {0, 0, 0};
 
     bool _relaxed;
 
     unsigned int _startTimestamp = 0;
 
-    static unsigned int counter;
+    unsigned int _currentTimestamp = 0;
 
-    double _resultX = 0, _resultY = 0;
+    static unsigned int counter;
 };
 
 

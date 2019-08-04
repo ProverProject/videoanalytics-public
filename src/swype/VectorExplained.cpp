@@ -147,3 +147,4 @@ void VectorExplained::SetSwipePoints(int from, int to) {
     _y = targetY - sourceY;
     CalculateExplained();
 }
+

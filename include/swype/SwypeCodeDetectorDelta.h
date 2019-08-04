@@ -15,23 +15,10 @@ public:
 
     SwypeCodeDetectorDelta() : SwypeCodeDetector() {};
 
-    /*SwypeCodeDetectorDelta(SwipeCode &code, DetectorParameters detectorParameters,
-                           unsigned int timestamp, const ShiftDetector &shiftDetectorSettings,
-                           cv::Mat &baseFrame) : SwypeCodeDetector(code, detectorParameters, timestamp),
-                                                 _shiftDetector(shiftDetectorSettings) {
-        _shiftDetector.SetBaseFrame(baseFrame);
-    };*/
-    SwypeCodeDetectorDelta(SwipeCode &code, DetectorParameters detectorParameters,
-                           unsigned int timestamp, const ShiftDetector &shiftDetectorSettings,
-                           const cv::Mat &baseFrame) :
-            SwypeCodeDetector(code, detectorParameters, timestamp) {};
-
-    //void NextFrame(cv::Mat &frame_i, uint timestamp) override;
     void NextFrame(VectorExplained shift);
 
+    void AdvanceStep();
 
-private:
-    //ShiftDetector _shiftDetector;
 };
 
 

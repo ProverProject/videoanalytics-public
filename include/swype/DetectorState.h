@@ -7,7 +7,7 @@
 
 
 #include <sys/types.h>
-#include "swype/SwipeCode.h"
+#include "swype/SwypeCode.h"
 #include "swype/settings.h"
 
 
@@ -44,7 +44,7 @@ public:
         return _state;
     }
 
-    inline void MoveToState(State state, uint timestamp, SwipeCode &code) {
+    inline void MoveToState(State state, uint timestamp, SwypeCode &code) {
         _state = state;
         _startTimestamp = timestamp;
 
@@ -62,7 +62,7 @@ public:
         }
     }
 
-    inline void StartDetection(uint timestamp, SwipeCode &code) {
+    inline void StartDetection(uint timestamp, SwypeCode &code) {
         _state = State::DetectingSwypeCode;
         _startTimestamp = timestamp;
         _maxStateEndTime = timestamp + code.TimeToInput();

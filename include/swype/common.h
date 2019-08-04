@@ -54,6 +54,11 @@ enum Message {
      * Swype code failed 'cause of timeout
      */
             SwypeFailTimeout = 3,
+
+    /**
+     * Swype code failed 'cause of timeout
+     */
+            SwypeStepFinished = 5,
     /**
      * we've got a closed curve, it's round enough, but too small
      */

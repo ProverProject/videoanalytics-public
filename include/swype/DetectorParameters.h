@@ -7,17 +7,17 @@
 
 
 #include "swype/settings.h"
-#include "swype/SwipeCode.h"
+#include "swype/SwypeCode.h"
 
 class DetectorParameters {
 public:
     DetectorParameters() {};
 
-    DetectorParameters(SwipeCode code) {
+    DetectorParameters(SwypeCode code) {
         ForCode(code);
     };
 
-    void ForCode(SwipeCode code) {
+    void ForCode(SwypeCode code) {
         _maxSwypeCodeLength = code._length + 1;
         _minSwypeCodeLength = code._length <= 2 ? 1 : code._length - 1;
     }
