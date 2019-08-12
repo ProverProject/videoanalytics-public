@@ -65,8 +65,10 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
     int pos = (pos_ - 1 + SHIFTS) % SHIFTS;
     VectorExplained sum = shifts_[pos];
 
-    uint noFramesBefore = shifts_[pos]._timestamp - MAX_CIRCLE_DURATION_MS;
-    int timestamp = shifts_[pos]._timestamp;
+    unsigned int timestamp = shifts_[pos]._timestamp;
+    unsigned int noFramesBefore = timestamp < MAX_CIRCLE_DURATION_MS ?
+                                  0 : timestamp - MAX_CIRCLE_DURATION_MS;
+
     double minDeviation = 10;
     double minDeviationDefect = 0;
     double minDeviationDist = 0;
