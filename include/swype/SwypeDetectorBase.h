@@ -42,10 +42,6 @@ public:
  */
     virtual void init(double sourceAspectRatio, int detectorWidth, int detectorHeight);
 
-    virtual void
-    init(double sourceAspectRatio, int detectorWidth, int detectorHeight, bool relaxed);
-
-
 protected:
 
     bool DetectCircle(VectorExplained windowedShift, uint timestamp, float *resultCoordinates,

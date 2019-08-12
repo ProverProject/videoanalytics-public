@@ -29,7 +29,7 @@ void SwypeCodeDetectorDelta2::NextFrame(VectorExplained shift) {
     }
 }
 
-unsigned int SwypeCodeDetectorDelta2::TimeToFail() {
+unsigned int SwypeCodeDetectorDelta2::TimeToFail() const {
     return _maxTimestamp - _currentTimestamp;
 }
 

@@ -4,9 +4,8 @@
 
 #include <swype/SwypeDetect2.h>
 
-void SwypeDetect2::init(double sourceAspectRatio, int detectorWidth, int detectorHeight,
-                           bool relaxed) {
-    SwypeDetectorBase::init(sourceAspectRatio, detectorWidth, detectorHeight, relaxed);
+void SwypeDetect2::init(double sourceAspectRatio, int detectorWidth, int detectorHeight) {
+    SwypeDetectorBase::init(sourceAspectRatio, detectorWidth, detectorHeight);
     _swypeDetector.Init(_detectorParameters);
     _frameWidth = detectorWidth;
     _frameHeight = detectorHeight;
@@ -39,10 +38,10 @@ void SwypeDetect2::AddNextStep(char direction, unsigned int maxDuration) {
     }
 }
 
-void SwypeDetect2::GameProcessMat(const cv::Mat &frame, uint timestamp, int &state, int &index,
-                                     int &message, float *point, float *shift, float *defect,
-                                     float *circleCoordinates, int circleCoordinatesLength,
-                                     int &actualCircleCoordinates) {
+void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, int &state, int &index,
+                              int &message, float *point, float *shift, float *defect,
+                              float *circleCoordinates, int circleCoordinatesLength,
+                              int &actualCircleCoordinates) {
     message = Message::None;
     if (shouldIgnoreFrame(frame, state, message)) {
         fillEmptyResponse(point, shift, defect, actualCircleCoordinates);
@@ -84,20 +83,20 @@ void SwypeDetect2::GameProcessMat(const cv::Mat &frame, uint timestamp, int &sta
     }
 }
 
-unsigned int SwypeDetect2::TimeToFailMs() {
+unsigned int SwypeDetect2::TimeToFailMs() const {
     if (_state == DetectorState::DetectingSwypeCode)
         return _swypeDetector.TimeToFail();
     else
         return 0;
 }
 
-void SwypeDetect2::GameProcessFrame(const unsigned char *frame_i, uint timestamp, int &state,
-                                       int &index, int &message, float *point, float *shift,
-                                       float *defect, float *circleCoordinates,
-                                       int circleCoordinatesLength, int &actualCircleCoordinates) {
+void SwypeDetect2::ProcessFrame(const unsigned char *frame_i, uint timestamp, int &state,
+                                int &index, int &message, float *point, float *shift,
+                                float *defect, float *circleCoordinates,
+                                int circleCoordinatesLength, int &actualCircleCoordinates) {
     cv::Mat frame(_frameHeight, _frameWidth, CV_8UC1, (uchar *) frame_i);
-    GameProcessMat(frame, timestamp, state, index, message, point, shift, defect,
-                   circleCoordinates, circleCoordinatesLength, actualCircleCoordinates);
+    ProcessMat(frame, timestamp, state, index, message, point, shift, defect,
+               circleCoordinates, circleCoordinatesLength, actualCircleCoordinates);
 }
 
 void SwypeDetect2::SetSwypeCode(SwypeCode &code) {

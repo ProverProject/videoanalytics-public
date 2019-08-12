@@ -33,15 +33,9 @@ void SwypeDetectorBase::setRelaxed(bool relaxed) {
 
 
 void SwypeDetectorBase::init(double sourceAspectRatio, int detectorWidth, int detectorHeight) {
-    init(sourceAspectRatio, detectorWidth, detectorHeight, false);
-}
-
-void
-SwypeDetectorBase::init(double sourceAspectRatio, int detectorWidth, int detectorHeight,
-                        bool relaxed) {
     _shiftDetector.SetDetectorSize(detectorWidth, detectorHeight, sourceAspectRatio);
     //_debugComparer.SetShiftDetector(_shiftDetector);
-    setRelaxed(relaxed);
+    setRelaxed(false);
 }
 
 bool

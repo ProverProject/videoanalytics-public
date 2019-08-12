@@ -15,7 +15,7 @@ public:
 
     void NextFrame(VectorExplained shift);
 
-    unsigned int TimeToFail();
+    unsigned int TimeToFail() const;
 
     void Reset(bool resetSwypeCode) override;
 
