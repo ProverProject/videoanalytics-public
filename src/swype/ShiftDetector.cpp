@@ -38,7 +38,7 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         createHanningWindow(_hann, _tickFrame.size(), CV_64F); //  create Hanning window
         _tickTock = false;
-        return VectorExplained();
+        return {0,0};
     }
 
     cv::Point2d shift;
@@ -64,6 +64,15 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
 
     return windowedShift;
 }
+
+void ShiftDetector::SetPrevFrame(const cv::Mat &frame_i) {
+    if (_tickTock) {
+        frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
+    } else {
+        frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
+    }
+}
+
 
 void ShiftDetector::SetBaseFrame(const cv::Mat &frame) {
     frame.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type

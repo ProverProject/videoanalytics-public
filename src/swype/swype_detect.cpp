@@ -1,5 +1,5 @@
 
-#include <swype/swype_detect.h>
+#include "swype/swype_detect.h"
 
 #include "swype/SwypeCodeDetector.h"
 #include "swype/SwypeDetectorBase.h"

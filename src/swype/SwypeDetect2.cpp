@@ -2,7 +2,7 @@
 // Created by babay on 29.07.2019.
 //
 
-#include <swype/SwypeDetect2.h>
+#include "swype/SwypeDetect2.h"
 
 void SwypeDetect2::init(double sourceAspectRatio, int detectorWidth, int detectorHeight) {
     SwypeDetectorBase::init(sourceAspectRatio, detectorWidth, detectorHeight);
@@ -45,6 +45,18 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, int &state, 
     message = Message::None;
     if (shouldIgnoreFrame(frame, state, message)) {
         fillEmptyResponse(point, shift, defect, actualCircleCoordinates);
+        _shiftDetector.SetPrevFrame(frame);
+        if (_state == DetectorState::WaitingToStartSwypeCode
+            || _state == DetectorState::DetectingSwypeCode) {
+            VectorExplained windowedShift(0, 0);
+            windowedShift._timestamp = timestamp;
+            _swypeDetector.NextFrame(windowedShift);
+            int msgTemp;
+            _swypeDetector.FillResult(_state, index, msgTemp);
+            if (msgTemp != 0)
+                message = msgTemp;
+            state = _state;
+        }
         return;
     }
 

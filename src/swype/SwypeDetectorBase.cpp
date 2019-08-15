@@ -2,7 +2,7 @@
 // Created by babay on 29.07.2019.
 //
 
-#include <swype/SwypeDetectorBase.h>
+#include "swype/SwypeDetectorBase.h"
 
 #include "swype/SwypeCodeDetector.h"
 #include "swype/swype_detect.h"

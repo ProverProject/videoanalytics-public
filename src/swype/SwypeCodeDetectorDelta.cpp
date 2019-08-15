@@ -2,7 +2,7 @@
 // Created by babay on 21.06.2018.
 //
 
-#include <swype/SwypeCodeDetectorDelta.h>
+#include "swype/SwypeCodeDetectorDelta.h"
 
 /*
 void SwypeCodeDetectorDelta::NextFrame(cv::Mat &frame_i, uint timestamp) {

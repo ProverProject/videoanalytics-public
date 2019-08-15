@@ -2,8 +2,8 @@
 // Created by babay on 29.07.2019.
 //
 
-#include <swype/SwypeCodeDetectorDelta2.h>
-#include <swype/DetectorState.h>
+#include "swype/SwypeCodeDetectorDelta2.h"
+#include "swype/DetectorState.h"
 
 void SwypeCodeDetectorDelta2::SetNextStep(SwypeStep step) {
     _nextStep = step;

@@ -29,6 +29,8 @@ public:
     VectorExplained
     ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp);
 
+    void SetPrevFrame(const cv::Mat &frame_i);
+
     VectorExplained ShiftToBaseFrame(const cv::Mat &frame, uint timestamp);
 
     void SetBaseFrame(const cv::Mat &frame);
