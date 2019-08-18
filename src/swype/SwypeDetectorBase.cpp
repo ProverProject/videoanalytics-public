@@ -43,6 +43,7 @@ SwypeDetectorBase::DetectCircle(VectorExplained windowedShift, uint timestamp,
                                 float *resultCoordinates,
                                 int resultCoordinatesLength, int &gotCircleCoordinates,
                                 int &message) {
+    gotCircleCoordinates = 0;
     if (windowedShift._mod > 0) {
         _circleDetector.AddShift(windowedShift);
         unsigned int checkCircleResult;
