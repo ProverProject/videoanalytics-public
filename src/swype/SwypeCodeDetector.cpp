@@ -128,6 +128,8 @@ void SwypeCodeDetector::Start(uint startTimestamp) {
     _startTimestamp = startTimestamp;
     _maxTimestamp = startTimestamp + _currentStep.maxDurationMs;
     _status = 3;
+    _stepDetector.Reset();
+    _stepDetector.SetDirection(_currentStep.direction);
 }
 
 

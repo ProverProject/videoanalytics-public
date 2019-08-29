@@ -63,7 +63,7 @@ public:
 
     virtual void SetSwypeCode(SwypeCode &code);
 
-    void Start(uint startTimestamp);
+    virtual void Start(uint startTimestamp);
 
 protected:
 

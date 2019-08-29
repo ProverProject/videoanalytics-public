@@ -23,6 +23,8 @@ public:
 
     void SetSwypeCode(SwypeCode &code) override;
 
+    void Start(uint startTimestamp) override;
+
 private:
     SwypeStep _nextStep = {0, 0, 0};
     bool _useSwypeCode = false;

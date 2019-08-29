@@ -65,3 +65,10 @@ void SwypeCodeDetectorDelta2::SetSwypeCode(SwypeCode &code) {
         _useSwypeCode = false;
     }
 }
+
+void SwypeCodeDetectorDelta2::Start(uint startTimestamp) {
+    if (_useSwypeCode) {
+        SetSwypeCode(_code);
+    }
+    SwypeCodeDetector::Start(startTimestamp);
+}
