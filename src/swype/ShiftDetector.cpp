@@ -107,7 +107,7 @@ VectorExplained ShiftDetector::ShiftToBaseFrame(const cv::Mat &frame, uint times
 void ShiftDetector::log1(uint timestamp, cv::Point2d &shift, VectorExplained &scaledShift,
                          VectorExplained &windowedShift) const {
     LOGI_NATIVE(
-            "t%d shift (%+6.2f,%+6.2f), scaled |%+.4f,%+.4f|=%.4f windowed |%+.4f,%+.4f|=%.4f_%3.0f_%d",
+            "detector t%d shift (%+6.2f,%+6.2f), scaled |%+.4f,%+.4f|=%.4f windowed |%+.4f,%+.4f|=%.4f_%3.0f_%d",
             timestamp, shift.x, shift.y,
             scaledShift._x, scaledShift._y, scaledShift._mod,
             windowedShift._x, windowedShift._y, windowedShift._mod, windowedShift._angle,

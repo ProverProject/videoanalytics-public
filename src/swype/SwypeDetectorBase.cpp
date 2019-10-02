@@ -85,7 +85,14 @@ SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &mess
     }
 
     _histogtam.Fill(frame);
-    if (_histogtam.IsLuminanceLow() || _histogtam.IsContrastLow()) {
+
+    bool lowLuminance = false;
+    bool lowContrast = false;
+    if ((lowLuminance = _histogtam.IsLuminanceLow())
+        || (lowContrast = _histogtam.IsContrastLow())) {
+        if (logLevel && LOG_VECTORS)
+            LOGI_NATIVE("detector reject frame: low lum: %d, low contrast: %d", lowLuminance,
+                        lowContrast);
         state = _state;
         message = LuminanceLow;
         return true;

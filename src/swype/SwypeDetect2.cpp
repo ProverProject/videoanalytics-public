@@ -45,7 +45,7 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, int &state, 
     message = Message::None;
     if (shouldIgnoreFrame(frame, state, message)) {
         fillEmptyResponse(point, shift, defect, actualCircleCoordinates);
-        _shiftDetector.SetPrevFrame(frame);
+        //_shiftDetector.SetPrevFrame(frame);
         if (_state == DetectorState::WaitingToStartSwypeCode
             || _state == DetectorState::DetectingSwypeCode) {
             VectorExplained windowedShift(0, 0);
@@ -81,6 +81,10 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, int &state, 
     if (_state <= DetectorState::WaitingForCircle) {
         index = 1;
         state = _state;
+        point[0] = 0;
+        point[1] = 0;
+        defect[0] = 0;
+        defect[1] = 0;
     } else {
         _swypeDetector.NextFrame(windowedShift);
         _swypeDetector.FillResult(_state, index, message);
