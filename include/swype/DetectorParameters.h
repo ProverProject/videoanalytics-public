@@ -17,9 +17,11 @@ public:
         ForCode(code);
     };
 
-    void ForCode(SwypeCode code) {
-        _maxSwypeCodeLength = code._length + 1;
-        _minSwypeCodeLength = code._length <= 2 ? 1 : code._length - 1;
+    void ForCode(SwypeCode &code) {
+        _maxSwypeCodeLength = code.Length() + 1;
+        if (_maxSwypeCodeLength > MAX_SWYPE_LENGTH)
+            _maxSwypeCodeLength = MAX_SWYPE_LENGTH;
+        _minSwypeCodeLength = code.Length() <= 2 ? 1 : code.Length() - 1;
     }
 
     void SetRelaxed(bool _relaxed) {
@@ -37,14 +39,25 @@ public:
         DetectorParameters::_detectorDetect = _detectorDetect;
     }
 
+    unsigned int MaxSwypeCodeLength() const {
+        return _maxSwypeCodeLength;
+    }
+
+    unsigned int MinSwypeCodeLength() const {
+        return _minSwypeCodeLength;
+    }
+
 public:
     double _speedMultX = SWYPE_SPEED;
     double _speedMultY = SWYPE_SPEED;
     float _targetRadius = TARGET_RADIUS;
     bool _relaxed;
+    double _detectorDetect;
+
+private:
     unsigned int _maxSwypeCodeLength;
     unsigned int _minSwypeCodeLength = 1;
-    double _detectorDetect;
+
 };
 
 

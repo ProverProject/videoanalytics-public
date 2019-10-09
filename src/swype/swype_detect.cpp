@@ -17,9 +17,9 @@ SwypeDetect::~SwypeDetect() {
     ocl::setUseOpenCL(false);
 }
 
-void SwypeDetect::setSwype(string swype) {
-    _swypeCode.Init(swype);
-    _swypeCodeSet = !_swypeCode.empty();
+void SwypeDetect::setSwype(const string &swype) {
+    _swypeCode = SwypeCode(swype);
+    _swypeCodeSet = !_swypeCode.IsEmpty();
     _detectorParameters.ForCode(_swypeCode);
     _state = DetectorState::WaitingForCircle;
 }
@@ -88,8 +88,8 @@ SwypeDetect::processMatExt(const cv::Mat &frame, uint timestamp, int &state, int
 }
 
 void
-SwypeDetect::DetectCircle(VectorExplained windowedShift, uint timestamp) {
-    if (windowedShift._mod > 0) {
+SwypeDetect::DetectCircle(const VectorExplained &windowedShift, uint timestamp) {
+    if (windowedShift.Mod() > 0) {
         _circleDetector.AddShift(windowedShift);
         if (_circleDetector.IsCircle()) {
             _detector.Init(_swypeCode, _detectorParameters, timestamp);
@@ -116,7 +116,7 @@ void SwypeDetect::processMatExt(const cv::Mat &frame, uint timestamp, int &state
     }
 
     if (_state == DetectorState::WaitingForCircle) {
-        bool gotCircle = SwypeDetectorBase::DetectCircle(windowedShift, timestamp,
+        bool gotCircle = SwypeDetectorBase::DetectCircle(windowedShift,
                                                          circleCoordinates, circleCoordinatesLength,
                                                          actualCircleCoordinates, message);
         if (gotCircle) {
@@ -133,7 +133,7 @@ void SwypeDetect::processMatExt(const cv::Mat &frame, uint timestamp, int &state
         _detector.NextFrame(windowedShift);
         _detector.FillResult(_state, index, message);
         _detector.GetCurrentVector(point, defect);
-        if (_detector.IsStepFinished()){
+        if (_detector.IsStepFinished()) {
             _detector.AdvanceStep();
         }
         state = _state;

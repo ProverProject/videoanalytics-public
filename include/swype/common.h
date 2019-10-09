@@ -1,7 +1,7 @@
 #ifndef COMMON_C_
 #define COMMON_C_
 
-#define APPNAME "ProverMVPDetector"
+#define APPNAME "ProverDetector"
 
 #ifdef __ANDROID_API__
 
@@ -77,4 +77,4 @@ enum Message {
 
 #endif
 
-extern int logLevel;
+extern unsigned int logLevel;

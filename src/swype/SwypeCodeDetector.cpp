@@ -11,12 +11,12 @@ unsigned int SwypeCodeDetector::counter = 0;
 
 void SwypeCodeDetector::FillResult(int &status, int &index, int &x, int &y, int &message,
                                    int &debug) const {
-    x = (int) (_stepDetector._current._x * 1024);
-    y = (int) (_stepDetector._current._y * 1024);
+    x = (int) (_stepDetector._current.X() * 1024);
+    y = (int) (_stepDetector._current.Y() * 1024);
 
-    debug = (int) (_stepDetector._current._defectX * 1024);
+    debug = (int) (_stepDetector._current.DefectX() * 1024);
     debug = debug << 16;
-    debug += (int) (_stepDetector._current._defectY * 1024);
+    debug += (int) (_stepDetector._current.DefectY() * 1024);
 
     FillResult(status, index, message);
 }
@@ -61,11 +61,11 @@ void SwypeCodeDetector::FillResult(int &status, int &index, int &message) const 
 }
 
 void SwypeCodeDetector::GetCurrentVector(float *point, float *defect) {
-    point[0] = static_cast<float>(_stepDetector._current._x);
-    point[1] = static_cast<float>(_stepDetector._current._y);
+    point[0] = static_cast<float>(_stepDetector._current.X());
+    point[1] = static_cast<float>(_stepDetector._current.Y());
     if (defect != nullptr) {
-        defect[0] = _stepDetector._current._defectX;
-        defect[1] = _stepDetector._current._defectY;
+        defect[0] = _stepDetector._current.DefectX();
+        defect[1] = _stepDetector._current.DefectY();
     }
 }
 
@@ -80,7 +80,7 @@ SwypeCodeDetector::Init(SwypeCode &code, DetectorParameters parameters, unsigned
     _relaxed = parameters._relaxed;
     _stepDetector.Configure(parameters);
 
-    SwypeStep step{0, code._directions[0], _code.TimeToInput()};
+    SwypeStep step{0, code.DirectionAt(0), _code.TimeToInput()};
     _startTimestamp = timestamp + _code.PauseBeforeEnterCode();
     SetCurrentStep(step, timestamp + _code.PauseBeforeEnterCode());
     _status = 3;
@@ -99,12 +99,13 @@ void SwypeCodeDetector::SetCurrentStep(SwypeStep step, unsigned int firstFrameTi
 
 void SwypeCodeDetector::AdvanceSwypeStep() {
     _currentStep.number++;
-    _currentStep.direction = _code._directions[_currentStep.number];
+    _currentStep.direction = _code.DirectionAt(_currentStep.number);
     _currentStep.maxDurationMs = _maxTimestamp - _currentTimestamp;
-    if (RESET_SUM_AT_SWYPE_POINT)
+#ifdef  RESET_SUM_AT_SWYPE_POINT
         _stepDetector.SetDirection(_currentStep.direction);
-    else
+#else
         _stepDetector.AdvanceDirection(_currentStep.direction);
+#endif
     _status = 0;
 }
 
@@ -116,7 +117,7 @@ void SwypeCodeDetector::Reset(bool resetSwypeCode) {
     _currentStep = {0,0,0};
     _stepDetector.Reset();
     if (resetSwypeCode) {
-        _code = SwypeCode();
+        _code.Clear();
     }
 }
 

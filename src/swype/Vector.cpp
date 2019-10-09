@@ -25,6 +25,8 @@ Vector Vector::EllipticalShift(double rx, double ry, double targetX, double targ
     // move to coordinates where our ellipse is radius-1 circle
     Vector res = Vector((targetX - _x) / rx, (targetY - _y) / ry);
     double len = res.Length();
+    if (len <= 1)
+        return Vector(targetX, targetY);
     //normalize -- point is on the circle
     res._x /= len;
     res._y /= len;

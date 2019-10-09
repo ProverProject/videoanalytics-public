@@ -10,17 +10,13 @@ void SwypeStepDetector::Add(VectorExplained shift) {
     shift.Mul(_parameters._speedMultX, _parameters._speedMultY);
 
     _current.Add(shift);
-    _current._timestamp = shift._timestamp;
+    _current.SetTimestamp(shift.Timestamp());
     _total.Add(shift);
     _count++;
 }
 
 void SwypeStepDetector::Set(VectorExplained total) {
-    total._x *= _parameters._speedMultX;
-    total._defectX *= _parameters._speedMultX;
-    total._y *= _parameters._speedMultY;
-    total._defectY *= _parameters._speedMultY;
-
+    total.Mul(_parameters._speedMultX, _parameters._speedMultY);
     _current = total;
     _count++;
 }
@@ -42,7 +38,7 @@ void SwypeStepDetector::FinishStep() {
     _current -= _target;
 
     if (logLevel & LOG_GENERAL_DETECTION) {
-        LOGI_NATIVE("FinishStep %d (%f %f) ", _id, _current._x, _current._y);
+        LOGI_NATIVE("FinishStep %d (%f %f) ", _id, _current.X(), _current.Y());
     }
 }
 
@@ -54,9 +50,10 @@ int SwypeStepDetector::CheckState(bool withDefect) {
         LOGI_NATIVE(
                 "CheckState %d |(%+.4f %+.4f) - (%+.4f %+.4f)|= %.4f, total: |%+.4f+-%.4f %+.4f+-%.4f| = %.4f+-%.4f defSum |%.4f,%.4f|= %.4f",
                 _id,
-                _current._x, _current._y, _target._x, _target._y, distance,
-                _total._x, _total._defectX, _total._y, _total._defectY, _total._mod,
-                _total.ModDefect(), _current._defectX, _current._defectY, _current.ModDefect());
+                _current.X(), _current.Y(), _target.X(), _target.Y(), distance,
+                _total.X(), _total.DefectX(), _total.Y(), _total.DefectY(),
+                _total.Mod(), _total.ModDefect(),
+                _current.DefectX(), _current.DefectY(), _current.ModDefect());
     }
 
     if (distance <= _targetRadius) {
@@ -66,8 +63,8 @@ int SwypeStepDetector::CheckState(bool withDefect) {
         return 1;
     }
 
-    bool boundsCheckResult = withDefect ? _BoundsChecker.CheckBoundsWithDefect(_current)
-                                        : _BoundsChecker.CheckBounds(_current);
+    bool boundsCheckResult = withDefect ? _boundsChecker.CheckBoundsWithDefect(_current)
+                                        : _boundsChecker.CheckBounds(_current);
 
     if (!boundsCheckResult) {
         if (logLevel & LOG_GENERAL_DETECTION) {
@@ -91,19 +88,20 @@ void SwypeStepDetector::AdvanceDirection(int dir) {
     SetTarget(_target);
 }
 
-void SwypeStepDetector::SetTarget(VectorExplained target) {
+void SwypeStepDetector::SetTarget(const VectorExplained &target) {
     _target = target;
 
     _targetRadius = _parameters._targetRadius;
-    if (_parameters._relaxed && _target._direction % 2 == 0) {// for diagonal target at server
+    if (_parameters._relaxed && _target.Direction() % 2 == 0) {// for diagonal target at server
         _targetRadius *= DIAGONAL_TARGET_RADIUS_MULT;
     }
 
-    _BoundsChecker.SetDirection(_target._direction);
-    _BoundsChecker.SetTargetRadius(_targetRadius, _parameters._targetRadius);
+    _boundsChecker.SetDirection(_target.Direction());
+    _boundsChecker.SetTargetRadius(_targetRadius, _parameters._targetRadius);
 
     if (logLevel & LOG_GENERAL_DETECTION) {
-        LOGI_NATIVE("SetTarget %d (%.1f %.1f) d %d", _id, target._x, target._y, target._direction);
+        LOGI_NATIVE("SetTarget %d (%.1f %.1f) d %d", _id, target.X(), target.Y(),
+                    target.Direction());
     }
 }
 

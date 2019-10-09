@@ -41,14 +41,14 @@ CircleDetector::CheckCircle(float *curveCoordinates, int coordinatesArrayLength,
             shiftPos = (pos_ - i + SHIFTS) % SHIFTS;
             current += shifts_[shiftPos];
             sum += current;
-            curveCoordinates[--coordinatePos] = static_cast<float>(current._y);
-            curveCoordinates[--coordinatePos] = static_cast<float>(current._x);
+            curveCoordinates[--coordinatePos] = static_cast<float>(current.Y());
+            curveCoordinates[--coordinatePos] = static_cast<float>(current.X());
         }
         sum *= (1.0 / (sections + 1));
         coordinatePos = -1;
         for (int i = 0; i <= sections; ++i) {
-            curveCoordinates[++coordinatePos] -= sum._x;
-            curveCoordinates[++coordinatePos] -= sum._y;
+            curveCoordinates[++coordinatePos] -= sum.X();
+            curveCoordinates[++coordinatePos] -= sum.Y();
         }
         writtenCoordinates = sections * 2 + 2;
     } else {
@@ -65,7 +65,7 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
     int pos = (pos_ - 1 + SHIFTS) % SHIFTS;
     VectorExplained sum = shifts_[pos];
 
-    unsigned int timestamp = shifts_[pos]._timestamp;
+    unsigned int timestamp = shifts_[pos].Timestamp();
     unsigned int noFramesBefore = timestamp < MAX_CIRCLE_DURATION_MS ?
                                   0 : timestamp - MAX_CIRCLE_DURATION_MS;
 
@@ -75,7 +75,7 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
 
     for (int i = 2; i <= total_; i++) {
         pos = (pos_ - i + SHIFTS) % SHIFTS;
-        if (shifts_[pos]._timestamp < noFramesBefore) {
+        if (shifts_[pos].Timestamp() < noFramesBefore) {
             if ((logLevel & LOG_CIRCLE_DETECTION) && minDeviation < 0.5) {
                 LOGI_NATIVE("IsCircle minDeviation: %.4f-%.4f = %.4f", minDeviation,
                             minDeviationDefect, minDeviationDist);
@@ -85,7 +85,7 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
 
         sum.Add(shifts_[pos]);
         if (i > 5) {
-            double dist = _relaxed ? sum._mod - sum.ModDefect() : sum._mod;
+            double dist = _relaxed ? sum.Mod() - sum.ModDefect() : sum.Mod();
             if (dist < _maxDeviation) {
                 //here the curve is definitely closed
                 ValueWithDefect perimeter;
@@ -93,17 +93,17 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
                 ValueWithDefect areaByP2ToCircle = area / (perimeter * perimeter);
                 areaByP2ToCircle /= CIRCLE_S_BY_P2;
 
-                double areaVal = _relaxed ? area.value + area.defect : area.value;
-                double aToPValue = _relaxed ? areaByP2ToCircle.value + areaByP2ToCircle.defect
-                                            : areaByP2ToCircle.value;
+                double areaVal = _relaxed ? area.Value() + area.Defect() : area.Value();
+                double aToPValue = _relaxed ? areaByP2ToCircle.Value() + areaByP2ToCircle.Defect()
+                                            : areaByP2ToCircle.Value();
 
                 if (logLevel & LOG_CIRCLE_DETECTION) {
                     bool gotCircle = areaVal >= _minCircleArea && aToPValue >= _minAreaByP2toCircle;
                     LOGI_NATIVE(
                             "IsCircle #%d vertices: %d, diff: %.4f-+%.4f (%.4f, %.4f) , area: %.4f+%.4f, areaByP2 to target: %.4f+%.4f, got: %d",
-                            timestamp, i + 1, sum._mod, sum.ModDefect(), sum._defectX, sum._defectY,
-                            area.value, area.defect, areaByP2ToCircle.value,
-                            areaByP2ToCircle.defect, gotCircle);
+                            timestamp, i + 1, sum.Mod(), sum.ModDefect(), sum.DefectX(), sum.DefectY(),
+                            area.Value(), area.Defect(), areaByP2ToCircle.Value(),
+                            areaByP2ToCircle.Defect(), gotCircle);
                 }
 
                 if (areaVal >= _minCircleArea && aToPValue >= _minAreaByP2toCircle) {
@@ -118,8 +118,8 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
                         result |= Result::CurveNotRoundEnough;
                 }
             }
-            if (sum._mod < minDeviation) {
-                minDeviation = sum._mod;
+            if (sum.Mod() < minDeviation) {
+                minDeviation = sum.Mod();
                 minDeviationDefect = sum.ModDefect();
                 minDeviationDist = dist;
             }
@@ -128,22 +128,20 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
     return static_cast<Result>(result);
 }
 
-ValueWithDefect CircleDetector::CalculateArea(int amount, ValueWithDefect &perResult) const {
-    Perimeter perimeter;
+ValueWithDefect CircleDetector::CalculateArea(int amount, ValueWithDefect &perimeter) const {
+    Perimeter perimeterCalc;
     Area area(shifts_[pos_]);
 
     for (int i = 2; i <= amount; i++) {
         int pos = (pos_ - i + SHIFTS) % SHIFTS;
-        perimeter.Add(shifts_[pos]);
+        perimeterCalc.Add(shifts_[pos]);
         area.AppendVector(shifts_[pos]);
     }
-    VectorExplained last(area.sum._x - shifts_[pos_]._x, area.sum._y - shifts_[pos_]._y);
-    last.CalculateMod();
-    perimeter.Add(last);
+    VectorExplained last(area.sum.X() - shifts_[pos_].X(), area.sum.Y() - shifts_[pos_].Y());
+    perimeterCalc.Add(last);
     area.AppendVector(last);
 
-    perResult.value = perimeter._perimeter;
-    perResult.defect = (float) perimeter.GetDefect();
+    perimeter.Set(perimeterCalc._perimeter, (float) perimeterCalc.GetDefect());
     return ValueWithDefect(fabs(area._area), (float) area.GetDefect());
 }
 

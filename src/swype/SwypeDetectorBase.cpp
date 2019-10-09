@@ -7,9 +7,8 @@
 #include "swype/SwypeCodeDetector.h"
 #include "swype/swype_detect.h"
 
-SwypeDetectorBase::SwypeDetectorBase() {
+SwypeDetectorBase::SwypeDetectorBase() : _state(0), _swypeCodeSet(false) {
     cv::ocl::setUseOpenCL(true);
-    _state = 0;
 }
 
 SwypeDetectorBase::~SwypeDetectorBase() {
@@ -39,12 +38,11 @@ void SwypeDetectorBase::init(double sourceAspectRatio, int detectorWidth, int de
 }
 
 bool
-SwypeDetectorBase::DetectCircle(VectorExplained windowedShift, uint timestamp,
-                                float *resultCoordinates,
+SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, float *resultCoordinates,
                                 int resultCoordinatesLength, int &gotCircleCoordinates,
                                 int &message) {
     gotCircleCoordinates = 0;
-    if (windowedShift._mod > 0) {
+    if (windowedShift.Mod() > 0) {
         _circleDetector.AddShift(windowedShift);
         unsigned int checkCircleResult;
         if (resultCoordinatesLength >= 10) {
@@ -86,7 +84,7 @@ SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &mess
 
     _histogtam.Fill(frame);
 
-    bool lowLuminance = false;
+    bool lowLuminance;
     bool lowContrast = false;
     if ((lowLuminance = _histogtam.IsLuminanceLow())
         || (lowContrast = _histogtam.IsContrastLow())) {

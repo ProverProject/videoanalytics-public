@@ -13,17 +13,17 @@ void SwypeCodeDetectorDelta2::SetNextStep(SwypeStep step) {
     }
 }
 
-void SwypeCodeDetectorDelta2::NextFrame(VectorExplained shift) {
-    _currentTimestamp = shift._timestamp;
-    if (shift._timestamp < _startTimestamp) {
-    } else if (shift._timestamp > _maxTimestamp) {
+void SwypeCodeDetectorDelta2::NextFrame(const VectorExplained &shift) {
+    _currentTimestamp = shift.Timestamp();
+    if (_currentTimestamp < _startTimestamp) {
+    } else if (_currentTimestamp > _maxTimestamp) {
         _status = -2;
-    } else if (shift._mod <= 0) { // generally == 0
+    } else if (shift.Mod() <= 0) { // generally == 0
         _status = 0;
     } else {
         _stepDetector.Add(shift);
         _status = _stepDetector.CheckState(false);
-        if (_status == 1 && _useSwypeCode && _currentStep.number + 1 >= _code._length) {
+        if (_status == 1 && _useSwypeCode && _currentStep.number + 1 >= _code.Length()) {
             _status = 2;
         }
     }
@@ -48,7 +48,7 @@ void SwypeCodeDetectorDelta2::AdvanceStep() {
     if (_useSwypeCode) {
         unsigned int duration = _maxTimestamp - _currentTimestamp;
         unsigned int num = _currentStep.number + 1;
-        SetCurrentStep(SwypeStep{num, _code._directions[num], duration}, _currentTimestamp);
+        SetCurrentStep(SwypeStep{num, _code.DirectionAt(num), duration}, _currentTimestamp);
     } else {
         SetCurrentStep(_nextStep, _currentTimestamp);
         _nextStep = {0, 0, 0};
@@ -56,13 +56,13 @@ void SwypeCodeDetectorDelta2::AdvanceStep() {
 }
 
 void SwypeCodeDetectorDelta2::SetSwypeCode(SwypeCode &code) {
-    if (code._length > 0) {
-        SwypeCodeDetector::SetSwypeCode(code);
-        SetCurrentStep(SwypeStep{0, code._directions[0], code.TimeToInput()}, 0);
-        _useSwypeCode = true;
-    } else {
+    if (code.IsEmpty()) {
         Reset(true);
         _useSwypeCode = false;
+    } else {
+        SwypeCodeDetector::SetSwypeCode(code);
+        SetCurrentStep(SwypeStep{0, code.DirectionAt(0), code.TimeToInput()}, 0);
+        _useSwypeCode = true;
     }
 }
 

@@ -1,4 +1,4 @@
 
 #include "swype/common.h"
 
-int logLevel = 0;
+unsigned int logLevel = 0;

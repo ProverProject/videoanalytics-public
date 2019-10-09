@@ -15,7 +15,7 @@ public:
 
     SwypeCodeDetectorDelta() : SwypeCodeDetector() {};
 
-    void NextFrame(VectorExplained shift);
+    void NextFrame(const VectorExplained &shift);
 
     void AdvanceStep();
 

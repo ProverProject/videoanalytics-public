@@ -155,7 +155,7 @@ public:
      * set swype code
      * @param swype
      */
-    void setSwype(std::string swype);
+    void setSwype(const std::string &swype);
 
     /**
      * process one frame, old version
@@ -261,7 +261,7 @@ public:
 
 private:
 
-    void DetectCircle(VectorExplained windowedShift, uint timestamp);
+    void DetectCircle(const VectorExplained &windowedShift, uint timestamp);
 
     SwypeCode _swypeCode;//we have swype code or we will wait swype code
 

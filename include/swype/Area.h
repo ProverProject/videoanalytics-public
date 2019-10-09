@@ -2,8 +2,8 @@
 // Created by babay on 06.01.2018.
 //
 
-#ifndef PROVER_MVP_ANDROID_AREA_H
-#define PROVER_MVP_ANDROID_AREA_H
+#ifndef PROVER_AREA_H
+#define PROVER_AREA_H
 
 
 #include "swype/VectorExplained.h"
@@ -14,13 +14,13 @@ public:
 
     inline void AppendVector(const VectorExplained &v) {
         sum.Add(v);
-        float triangleArea = (float) (sum._x * sumPrev._y - sum._y * sumPrev._x) / 2;
+        float triangleArea = (float) (sum.X() * sumPrev.Y() - sum.Y() * sumPrev.X()) / 2;
         _area += triangleArea;
 
-        double t1 = (sum._x * sumPrev._defectY);
-        double t2 = (sum._defectX * sumPrev._y);
-        double t3 = (sum._y * sumPrev._defectX);
-        double t4 = (sum._defectY * sumPrev._x);
+        double t1 = (sum.X() * sumPrev.DefectY());
+        double t2 = (sum.DefectX() * sumPrev.Y());
+        double t3 = (sum.Y() * sumPrev.DefectX());
+        double t4 = (sum.DefectY() * sumPrev.X());
 
         _defect2 += t1 * t1 + t2 * t2 + t3 * t3 + t4 * t4;
         sumPrev = sum;
@@ -41,4 +41,4 @@ private:
 };
 
 
-#endif //PROVER_MVP_ANDROID_AREA_H
+#endif //PROVER_AREA_H

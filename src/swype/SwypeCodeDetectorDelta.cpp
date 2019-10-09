@@ -33,17 +33,17 @@ void SwypeCodeDetectorDelta::NextFrame(cv::Mat &frame_i, uint timestamp) {
     }
 }*/
 
-void SwypeCodeDetectorDelta::NextFrame(VectorExplained shift) {
-    _currentTimestamp = shift._timestamp;
-    if (shift._timestamp < _startTimestamp) {
-    } else if (shift._timestamp > _maxTimestamp) {
+void SwypeCodeDetectorDelta::NextFrame(const VectorExplained &shift) {
+    _currentTimestamp = shift.Timestamp();
+    if (_currentTimestamp < _startTimestamp) {
+    } else if (_currentTimestamp > _maxTimestamp) {
         _status = -2;
-    } else if (shift._mod <= 0) { // generally == 0
+    } else if (shift.Mod() <= 0) { // generally == 0
         _status = 0;
     } else {
         _stepDetector.Add(shift);
         _status = _stepDetector.CheckState(_relaxed);
-        if (_status == 1 && _currentStep.number + 1 >= _code._length) {
+        if (_status == 1 && _currentStep.number + 1 >= _code.Length()) {
             _status = 2;
         }
     }

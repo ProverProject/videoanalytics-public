@@ -2,8 +2,8 @@
 // Created by babay on 07.12.2017.
 //
 
-#ifndef PROVER_MVP_ANDROID_VECTOREXPLAINED_H
-#define PROVER_MVP_ANDROID_VECTOREXPLAINED_H
+#ifndef PROVER_VECTOREXPLAINED_H
+#define PROVER_VECTOREXPLAINED_H
 
 #include <opencv2/opencv.hpp>
 #include "swype/Vector.h"
@@ -13,7 +13,21 @@ class VectorExplained : public Vector {
 public:
     VectorExplained() {};
 
-    VectorExplained(double x, double y) : Vector(x, y) {
+    VectorExplained(double x, double y) : Vector(x, y),
+                                          _defectX(0), _defectY(0), _defectX2sum(0),
+                                          _defectY2sum(0) {
+        CalculateExplained();
+    };
+
+    VectorExplained(double x, double y, unsigned int timestamp) : Vector(x, y, timestamp),
+                                                                  _defectX(0), _defectY(0),
+                                                                  _defectX2sum(0), _defectY2sum(0) {
+        CalculateExplained();
+    };
+
+    VectorExplained(const cv::Point2d &source, double mulX, double mulY, unsigned int timestamp)
+            : Vector(source.x * mulX, source.y * mulY, timestamp),
+              _defectX(0), _defectY(0), _defectX2sum(0), _defectY2sum(0) {
         CalculateExplained();
     };
 
@@ -22,10 +36,9 @@ public:
     void Set(double x, double y) {
         _x = x;
         _y = y;
+        CalculateMod();
         CalculateExplained();
     }
-
-    void SetMul(const cv::Point2d &other, double mulX, double mulY);
 
     void ApplyWindow(double windowStart, double windowEnd);
 
@@ -33,6 +46,10 @@ public:
 
     inline void Reset();
 
+    /**
+     * changes vector length but maintains vector direction
+     * @param length
+     */
     void SetLength(double length);
 
     void operator*=(double mul);
@@ -45,8 +62,6 @@ public:
     }
 
     bool CheckWithinRectWithDefect(float left, float top, float right, float bottom) const;
-
-    void AttractTo(const Vector &other, double force);
 
     inline int DirectionDiff(VectorExplained other) const {
         return (_direction - other._direction + 12) % 8 - 4;
@@ -125,8 +140,12 @@ public:
      * @param from
      * @param to
      */
-    void SetSwipePoints(int from, int to);
+    void SetSwypePoints(int from, int to);
 
+    /**
+     * return vector length defect
+     * @return
+     */
     float ModDefect() const {
         if (_mod == 0)
             return 0;
@@ -143,12 +162,13 @@ public:
 #ifdef RECT_DEFECT
         Vector shifted = ShiftDefectRectToPointMagnet((float) other._x, (float) other._y, 1);
 #else
-        Vector shifted = EllipticalShiftMagnet(_defectX, _defectY, other._x, other._y);
+        Vector shifted = EllipticalShiftMagnet(_defectX, _defectY, other.X(), other.Y());
 #endif
         if (logLevel & LOG_VECTORS) {
             LOGI_NATIVE(
                     "DistanceWithDefect (%.4f %.4f) shifted (%.4f, %.4f) to (%.4f, %.4f) distance = %.4f",
-                    _x, _y, shifted._x, shifted._y, other._x, other._y, shifted.DistanceTo(other)
+                    _x, _y, shifted.X(), shifted.Y(), other.X(), other.Y(),
+                    shifted.DistanceTo(other)
             );
         }
         return shifted.DistanceTo(other);
@@ -159,23 +179,42 @@ public:
         return sqrt(dx * dx + dy * dy);*/
     }
 
-    double _angle = 0;
-    /**
-     * 1 -- down, 3 -- left, 5 -- top, 7 -- right, 8 -- bottom-right
-     */
-    int _direction = 0;
+    inline double Angle() const {
+        return _angle;
+    }
 
-    float _defectX = 0;
-    float _defectY = 0;
-    double _defectX2sum = 0;
-    double _defectY2sum = 0;
+    inline int Direction() const {
+        return _direction;
+    }
 
-    void toFloatArray(float *output) {
+    inline float DefectX() const {
+        return _defectX;
+    }
+
+    inline float DefectY() const {
+        return _defectY;
+    }
+
+    void toFloatArray(float *output) const {
         output[0] = static_cast<float>(_x);
         output[1] = static_cast<float>(_y);
     }
 
 private:
+
+    double _angle;
+
+    /**
+     * 1 -- down, 3 -- left, 5 -- top, 7 -- right, 8 -- bottom-right
+     */
+    int _direction;
+
+    float _defectX;
+    float _defectY;
+
+    double _defectX2sum;
+    double _defectY2sum;
+
     void CalculateExplained();
 };
 
@@ -192,4 +231,4 @@ inline void VectorExplained::Reset() {
 }
 
 
-#endif //PROVER_MVP_ANDROID_VECTOREXPLAINED_H
+#endif //PROVER_VECTOREXPLAINED_H

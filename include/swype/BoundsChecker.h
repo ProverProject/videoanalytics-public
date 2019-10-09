@@ -2,8 +2,8 @@
 // Created by babay on 09.12.2017.
 //
 
-#ifndef PROVER_MVP_ANDROID_BOUNDSCHECKER_H
-#define PROVER_MVP_ANDROID_BOUNDSCHECKER_H
+#ifndef PROVER_BOUNDSCHECKER_H
+#define PROVER_BOUNDSCHECKER_H
 
 
 #include "swype/Vector.h"
@@ -13,12 +13,12 @@
 // FIT_FACTOR_H is for horizontal and vertical movement;
 // FIT_FACTOR_H is for diagonal
 
-#define FIT_FACTOR_H 0.5f
-#define FIT_FACTOR_H_RELAXED 0.55f
+#define FIT_FACTOR_H 0.5F
+#define FIT_FACTOR_H_RELAXED 0.55F
 #define BOUNDS_CHECKER_TARGET_SAFE_ZONE 0.35
 
 /**
- * Checks that we are closer to source or target swype points (and a line between them) then to other swipe points
+ * Checks that we are closer to source or target swype points (and a line between them) then to other swype points
  *
  * rotates original vector to direction 7 or 8 to simplify calculations
  */
@@ -51,4 +51,4 @@ private:
 };
 
 
-#endif //PROVER_MVP_ANDROID_BOUNDSCHECKER_H
+#endif //PROVER_BOUNDSCHECKER_H

@@ -51,12 +51,10 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         shift = phaseCorrelate(_tockFrame, _tickFrame, _hann); // we calculate a phase offset vector
     }
-    VectorExplained scaledShift;
-    scaledShift.SetMul(shift, _xMult, _yMult);
+    VectorExplained scaledShift(shift, _xMult, _yMult, timestamp);
     VectorExplained windowedShift = scaledShift;
     windowedShift.ApplyWindow(VECTOR_WINDOW_START, VECTOR_WINDOW_END);
     windowedShift.setRelativeDefect(_relativeDefect);
-    windowedShift._timestamp = timestamp;
 
     if (logLevel & LOG_VECTORS) {
         log1(timestamp, shift, scaledShift, windowedShift);
@@ -91,10 +89,8 @@ VectorExplained ShiftDetector::ShiftToBaseFrame(const cv::Mat &frame, uint times
 
     const cv::Point2d &shift = phaseCorrelate(_tickFrame, _tockFrame,
                                               _hann); // we calculate a phase offset vector
-    VectorExplained scaledShift;
-    scaledShift.SetMul(shift, _xMult, _yMult);
+    VectorExplained scaledShift(shift, _xMult, _yMult, timestamp);
     scaledShift.setRelativeDefect(_relativeDefect);
-    scaledShift._timestamp = timestamp;
 
     if (logLevel & LOG_VECTORS) {
         log2(timestamp, shift, scaledShift);
@@ -109,9 +105,9 @@ void ShiftDetector::log1(uint timestamp, cv::Point2d &shift, VectorExplained &sc
     LOGI_NATIVE(
             "detector t%d shift (%+6.2f,%+6.2f), scaled |%+.4f,%+.4f|=%.4f windowed |%+.4f,%+.4f|=%.4f_%3.0f_%d",
             timestamp, shift.x, shift.y,
-            scaledShift._x, scaledShift._y, scaledShift._mod,
-            windowedShift._x, windowedShift._y, windowedShift._mod, windowedShift._angle,
-            windowedShift._direction);
+            scaledShift.X(), scaledShift.Y(), scaledShift.Mod(),
+            windowedShift.X(), windowedShift.Y(), windowedShift.Mod(), windowedShift.Angle(),
+            windowedShift.Direction());
 }
 
 void
@@ -120,8 +116,8 @@ ShiftDetector::log2(uint timestamp, const cv::Point2d &shift, VectorExplained &s
             "t%d shift (%+6.2f,%+6.2f), scaled |%+.4f,%+.4f|=%.4f_%3.0f_%d",
             timestamp, shift.x, shift.y,
 
-            scaledShift._x, scaledShift._y, scaledShift._mod, scaledShift._angle,
-            scaledShift._direction);
+            scaledShift.X(), scaledShift.Y(), scaledShift.Mod(), scaledShift.Angle(),
+            scaledShift.Direction());
 }
 
 void ShiftDetector::SetRelativeDefect(double defect) {

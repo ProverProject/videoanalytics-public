@@ -44,8 +44,9 @@ public:
 
 protected:
 
-    bool DetectCircle(VectorExplained windowedShift, uint timestamp, float *resultCoordinates,
-                      int resultCoordinatesLength, int &gotCircleCoordinates, int &message);
+    bool DetectCircle(const VectorExplained &windowedShift, float *resultCoordinates,
+                      int resultCoordinatesLength, int &gotCircleCoordinates,
+                      int &message);
 
     bool shouldIgnoreFrame(const cv::Mat &frame, int &state, int &message);
 

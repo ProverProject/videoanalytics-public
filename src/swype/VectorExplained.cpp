@@ -8,18 +8,14 @@
 void VectorExplained::Set(const cv::Point2d &other) {
     _x = (float) other.x;
     _y = (float) other.y;
-    CalculateExplained();
-}
-
-void VectorExplained::SetMul(const cv::Point2d &other, double mulX, double mulY) {
-    _x = (float) other.x * mulX;
-    _y = (float) other.y * mulY;
+    CalculateMod();
     CalculateExplained();
 }
 
 void VectorExplained::Add(const VectorExplained &other) {
-    if (other._mod > 0) {
+    if (other.Mod() > 0) {
         (*this) += other;
+        CalculateMod();
         CalculateExplained();
         _defectX2sum += other._defectX * other._defectX;
         _defectY2sum += other._defectY * other._defectY;
@@ -29,9 +25,9 @@ void VectorExplained::Add(const VectorExplained &other) {
 }
 
 void VectorExplained::CalculateExplained() {
-    CalculateMod();
     if (_mod <= 0) {
         _angle = 0;
+        _direction = 0;
         return;
     }
 
@@ -41,11 +37,11 @@ void VectorExplained::CalculateExplained() {
         double k = -_y / _x;
         _angle = atan(k) * 180 / CV_PI;
         if (_x < 0)
-            _angle += 180.0f;
+            _angle += 180.0F;
         _angle = fmod(_angle + 360.0, 360.0);
     }
 
-    _direction = (int) (floor((360 - _angle - 22.5) / 45));
+    _direction = (int) (floor((360.0 - _angle - 22.5) / 45));
     _direction = (_direction + 7) % 8 + 1;
 
     /*
@@ -81,13 +77,6 @@ void VectorExplained::SetLength(double length) {
     }
 }
 
-void VectorExplained::AttractTo(const Vector &other, double force) {
-    double mod = _mod;
-    Vector::Add(other._x * force, other._y * force);
-    _mod = Length();
-    SetLength(mod);
-}
-
 void VectorExplained::Log() const {
     LOGI_NATIVE("VectorExplained (%f,%f) angle %f, mod %f ", _x, _y, _angle, _mod);
 }
@@ -95,7 +84,7 @@ void VectorExplained::Log() const {
 void VectorExplained::ApplyWindow(double windowStart, double windowEnd) {
     if (_mod <= windowStart) {
         Reset();
-    } else if (_mod < windowEnd) {
+    } else if (_mod < windowEnd && windowStart != windowEnd) {
         double arg = (_mod - windowStart) / (windowEnd - windowStart);
         *this *= arg;
     }
@@ -114,11 +103,13 @@ VectorExplained::CheckWithinRectWithDefect(float left, float top, float right, f
     // coordinate center to rect's center; reflect to positive
     Vector v = Vector(fabs(_x - cx), fabs(_y - cy));
     // coordinate center to rect's right-bottom corner
-    v._x -= (right - cx);
-    v._y -= (bottom - cy);
+    //v._x -= (right - cx);
+    //v._y -= (bottom - cy);
+    v -= Vector(right - cx, bottom - cy);
+
     Vector shifted = v.EllipticalShiftMagnet(_defectX, _defectY, 0, 0);
     // if (0,0) within defect area then vector becomes shifted to 0,0
-    return shifted._x == 0 && shifted._y == 0;
+    return shifted.X() == 0 && shifted.Y() == 0;
 }
 
 void VectorExplained::SetDirection(int direction) {
@@ -136,7 +127,7 @@ void VectorExplained::SetDirection(int direction) {
         _y = direction / 4 == 0 ? -1 : 1;
 }
 
-void VectorExplained::SetSwipePoints(int from, int to) {
+void VectorExplained::SetSwypePoints(int from, int to) {
     --from;
     --to;
     int sourceX = from % 3;
@@ -145,6 +136,6 @@ void VectorExplained::SetSwipePoints(int from, int to) {
     int targetY = to / 3;
     _x = targetX - sourceX;
     _y = targetY - sourceY;
+    CalculateMod();
     CalculateExplained();
 }
-

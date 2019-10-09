@@ -87,8 +87,8 @@ bool BoundsChecker::CheckBounds(VectorExplained p) {
 
     if (p.DistanceTo(_target) < BOUNDS_CHECKER_TARGET_SAFE_ZONE) {
         if (logLevel & LOG_GENERAL_DETECTION) {
-            LOGI_NATIVE("Bounds within target safe zone: %.4f, %.4f, distToTarget: %.4f", p._x,
-                        p._y, p.DistanceTo(_target));
+            LOGI_NATIVE("Bounds within target safe zone: %.4f, %.4f, distToTarget: %.4f",
+                        p.X(), p.Y(), p.DistanceTo(_target));
         }
         return true;
     }
@@ -96,18 +96,18 @@ bool BoundsChecker::CheckBounds(VectorExplained p) {
     float tr1 = 1 + _targetRadius;
 
     if (_isDiagonal) {
-        if (p._x < -FIT_FACTOR_H || p._y < -FIT_FACTOR_H || p._x > tr1 || p._y > tr1) {
+        if (p.X() < -FIT_FACTOR_H || p.Y() < -FIT_FACTOR_H || p.X() > tr1 || p.Y() > tr1) {
             if (logLevel & LOG_GENERAL_DETECTION) {
-                LOGI_NATIVE("Bounds_f1 %.4f, %.4f, tr: %.4f", p._x, p._y, _targetRadius);
+                LOGI_NATIVE("Bounds_f1 %.4f, %.4f, tr: %.4f", p.X(), p.Y(), _targetRadius);
             }
             return false;
         }
 
-        if (p._x + p._y <= 0) {
+        if (p.X() + p.Y() <= 0) {
             return true;
         }
 
-        if (p._y > p._x) {
+        if (p.Y() > p.X()) {
             p.FlipXY();
         }
 
@@ -121,14 +121,14 @@ bool BoundsChecker::CheckBounds(VectorExplained p) {
         float distanceToWrongPoint = (float) shifted.DistanceTo(1, 0);
         if (distanceToWrongPoint <= _targetRadiusOther) {
             if (logLevel & LOG_GENERAL_DETECTION) {
-                LOGI_NATIVE("Bounds 2shifted (%.4f %.4f) dist = %.4f", shifted._x, shifted._y,
-                            distanceToWrongPoint);
+                LOGI_NATIVE("Bounds 2shifted (%.4f %.4f) dist = %.4f",
+                            shifted.X(), shifted.Y(), distanceToWrongPoint);
             }
             return false;
         }
 
         //distance to line x = y -- it is the line that goes to target point
-        double d1 = (p._x - p._y) / SQRT2;
+        double d1 = (p.X() - p.Y()) / SQRT2;
         // distance to remaining non-target swype point
         double r2 = p.DistanceTo(1, 0);
         if (!(logLevel & LOG_GENERAL_DETECTION))
@@ -136,11 +136,11 @@ bool BoundsChecker::CheckBounds(VectorExplained p) {
         else {
             if (d1 < r2)
                 return true;
-            LOGI_NATIVE("Bounds_f3 %.4f, %.4f, %f, %f", p._x, p._y, d1, r2);
+            LOGI_NATIVE("Bounds_f3 %.4f, %.4f, %f, %f", p.X(), p.Y(), d1, r2);
             return false;
         }
     } else {
-        return p._x >= -FIT_FACTOR_H && p._x <= tr1 && fabs(p._y) <= FIT_FACTOR_H;
+        return p.X() >= -FIT_FACTOR_H && p.X() <= tr1 && fabs(p.Y()) <= FIT_FACTOR_H;
     }
 }
 
@@ -150,8 +150,8 @@ bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p) {
 
     if (p.MinDistanceToWithDefect(_target) < BOUNDS_CHECKER_TARGET_SAFE_ZONE) {
         if (logLevel & LOG_GENERAL_DETECTION) {
-            LOGI_NATIVE("Bounds within target safe zone: %.4f, %.4f, distToTarget: %.4f", p._x,
-                        p._y, p.MinDistanceToWithDefect(_target));
+            LOGI_NATIVE("Bounds within target safe zone: %.4f, %.4f, distToTarget: %.4f",
+                        p.X(), p.Y(), p.MinDistanceToWithDefect(_target));
         }
         return true;
     }
@@ -161,16 +161,16 @@ bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p) {
     if (_isDiagonal) {
         if (!p.CheckWithinRectWithDefect(-FIT_FACTOR_H_RELAXED, -FIT_FACTOR_H_RELAXED, tr1, tr1)) {
             if (logLevel & LOG_GENERAL_DETECTION) {
-                LOGI_NATIVE("Bounds_f1 %.4f, %.4f", p._x, p._y);
+                LOGI_NATIVE("Bounds_f1 %.4f, %.4f", p.X(), p.Y());
             }
             return false;
         }
 
-        if (p._x + p._y <= 0) {
+        if (p.X() + p.Y() <= 0) {
             return true;
         }
 
-        if (p._x < p._y) {
+        if (p.X() < p.Y()) {
             p.FlipXY();
         }
 
@@ -183,7 +183,7 @@ bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p) {
         float distanceToWrongPoint = (float) shifted.DistanceTo(1, 0);
         if (distanceToWrongPoint <= _targetRadiusOther) {
             if (logLevel & LOG_GENERAL_DETECTION) {
-                LOGI_NATIVE("Bounds 2shifted (%.4f %.4f) dist = %.4f", shifted._x, shifted._y,
+                LOGI_NATIVE("Bounds 2shifted (%.4f %.4f) dist = %.4f", shifted.X(), shifted.Y(),
                             distanceToWrongPoint);
             }
             return false;
@@ -193,21 +193,22 @@ bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p) {
 #else
         Vector shiftedToLine = p.ShiftDefectEllipseToTouchLineMagnet();
 #endif
-        if (shiftedToLine._x == shiftedToLine._y)
+        if (shiftedToLine.X() == shiftedToLine.Y())
             return true;
         //a point on the diagonal within defect area, so we are definitely not failed
-        if (p._x <= p._y) {
+        if (p.X() <= p.Y()) {
             return true;
         }
 
         //distance to line x = y -- it is the line that goes to target point
-        double d1 = (shiftedToLine._x - shiftedToLine._y) / SQRT2;
+        double d1 = (shiftedToLine.X() - shiftedToLine.Y()) / SQRT2;
         // distance to remaining non-target swype point
         double r2 = shiftedToLine.DistanceTo(1, 0);
         if (logLevel & LOG_GENERAL_DETECTION) {
             if (d1 < r2)
                 return true;
-            LOGI_NATIVE("Bounds_f3 %.4f, %.4f, %f, %f", shiftedToLine._x, shiftedToLine._y, d1, r2);
+            LOGI_NATIVE("Bounds_f3 %.4f, %.4f, %f, %f", shiftedToLine.X(), shiftedToLine.Y(), d1,
+                        r2);
             return false;
         } else return d1 < r2;
     } else {

@@ -2,8 +2,8 @@
 // Created by babay on 07.12.2017.
 //
 
-#ifndef PROVER_MVP_ANDROID_SWYPESTEPDETECTOR_H
-#define PROVER_MVP_ANDROID_SWYPESTEPDETECTOR_H
+#ifndef PROVER_SWYPESTEPDETECTOR_H
+#define PROVER_SWYPESTEPDETECTOR_H
 
 #include "swype/VectorExplained.h"
 #include "swype/BoundsChecker.h"
@@ -11,7 +11,7 @@
 
 /**
  * coordinate convention:
- * (0,0) is at current swype-point; 1 is a distance between two swipe-points (non diagonal).
+ * (0,0) is at current swype-point; 1 is a distance between two swype-points (non diagonal).
  * X axis directed from left to right
  * Y axis directed from top to bottom
  *
@@ -44,7 +44,7 @@ public:
      */
     void AdvanceDirection(int dir);
 
-    void SetTarget(VectorExplained target);
+    void SetTarget(const VectorExplained &target);
 
     void FinishStep();
 
@@ -65,11 +65,11 @@ private:
     int _count = 0;
     float _targetRadius = 0;
     DetectorParameters _parameters;
-    BoundsChecker _BoundsChecker;
+    BoundsChecker _boundsChecker;
     VectorExplained _total;
     VectorExplained _target;
     unsigned int _id;
 };
 
 
-#endif //PROVER_MVP_ANDROID_SWYPESTEPDETECTOR_H
+#endif //PROVER_SWYPESTEPDETECTOR_H

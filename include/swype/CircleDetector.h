@@ -2,8 +2,8 @@
 // Created by babay on 08.12.2017.
 //
 
-#ifndef PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
-#define PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
+#ifndef PROVER_SWYPECIRCLEDETECTOR_H
+#define PROVER_SWYPECIRCLEDETECTOR_H
 
 
 #include "swype/VectorExplained.h"
@@ -70,7 +70,7 @@ public:
     void Clear();
 
 private:
-    ValueWithDefect CalculateArea(int amount, ValueWithDefect &perResult) const;
+    ValueWithDefect CalculateArea(int amount, ValueWithDefect &perimeter) const;
 
     VectorExplained shifts_[SHIFTS];
     int pos_ = 0;
@@ -83,4 +83,4 @@ private:
 };
 
 
-#endif //PROVER_MVP_ANDROID_SWIPECIRCLEDETECTOR_H
+#endif //PROVER_SWYPECIRCLEDETECTOR_H

@@ -2,8 +2,8 @@
 // Created by babay on 20.05.2018.
 //
 
-#ifndef PROVER_MVP_ANDROID_DETECTORSTATUS_H
-#define PROVER_MVP_ANDROID_DETECTORSTATUS_H
+#ifndef PROVER_DETECTORSTATUS_H
+#define PROVER_DETECTORSTATUS_H
 
 
 #include <sys/types.h>
@@ -80,4 +80,4 @@ private:
 
 
 
-#endif //PROVER_MVP_ANDROID_DETECTORSTATUS_H
+#endif //PROVER_DETECTORSTATUS_H

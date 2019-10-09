@@ -2,8 +2,8 @@
 // Created by babay on 08.12.2017.
 //
 
-#ifndef PROVER_MVP_ANDROID_VECTOR_H
-#define PROVER_MVP_ANDROID_VECTOR_H
+#ifndef PROVER_VECTOR_H
+#define PROVER_VECTOR_H
 
 
 #include <cmath>
@@ -11,9 +11,12 @@
 class Vector {
 public:
 
-    Vector() {}
+    Vector() : _x(0), _y(0), _mod(0), _timestamp(0) {}
 
-    Vector(double _x, double _y) : _x(_x), _y(_y), _mod(0) {}
+    Vector(double x, double y) : _x(x), _y(y), _mod(sqrt(x * x + y * y)), _timestamp(0) {}
+
+    Vector(double x, double y, unsigned int timestamp) : _x(x), _y(y), _timestamp(timestamp),
+                                                         _mod(sqrt(x * x + y * y)) {}
 
     inline void operator+=(const Vector &other) {
         _x += other._x;
@@ -101,13 +104,42 @@ public:
 
     Vector ShiftRectToTouchLineMagnet(float rx, float ry) const;
 
-    double _x = 0;
-    double _y = 0;
-    double _mod = 0;
+    inline unsigned int Timestamp() const {
+        return _timestamp;
+    }
 
-    unsigned int _timestamp = 0;
+    inline void SetTimestamp(unsigned int timestamp) {
+        _timestamp = timestamp;
+    }
+
+    inline double X() const {
+        return _x;
+    }
+
+    inline double Y() const {
+        return _y;
+    }
+
+
+    inline double Mod() const {
+        return _mod;
+    }
+
 
 protected:
+    double _x;
+    double _y;
+
+    /**
+     * vector timestamp
+     */
+    unsigned int _timestamp;
+
+    /**
+     * vector length
+     */
+    double _mod;
+
     inline void Add(double x, double y) {
         _x += x;
         _y += y;
@@ -115,4 +147,4 @@ protected:
 };
 
 
-#endif //PROVER_MVP_ANDROID_VECTOR_H
+#endif //PROVER_VECTOR_H
