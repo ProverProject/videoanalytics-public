@@ -18,6 +18,7 @@
 #include "swype/ShiftDetector.h"
 #include "swype/SwypeCodeDetectorDelta.h"
 #include "swype/Histogram.h"
+#include "detection_results.h"
 
 class SwypeDetectorBase {
 protected:
@@ -48,7 +49,11 @@ protected:
                       int resultCoordinatesLength, int &gotCircleCoordinates,
                       int &message);
 
+    bool DetectCircle(const VectorExplained &windowedShift, DetectionResults &result);
+
     bool shouldIgnoreFrame(const cv::Mat &frame, int &state, int &message);
+
+    bool shouldIgnoreFrame(const cv::Mat &frame, DetectionResults &result);
 
     void fillEmptyResponse(float *point, float *shift, float *defect, int &actualCircleCoordinates);
 

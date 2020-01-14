@@ -11,23 +11,26 @@
 
 class VectorExplained : public Vector {
 public:
-    VectorExplained() {};
+    VectorExplained() : Vector(0.0, 0.0),
+                        _defectX(0), _defectY(0), _defectX2sum(0.0),
+                        _defectY2sum(0.0) {};
 
     VectorExplained(double x, double y) : Vector(x, y),
-                                          _defectX(0), _defectY(0), _defectX2sum(0),
-                                          _defectY2sum(0) {
+                                          _defectX(0), _defectY(0), _defectX2sum(0.0),
+                                          _defectY2sum(0.0) {
         CalculateExplained();
     };
 
     VectorExplained(double x, double y, unsigned int timestamp) : Vector(x, y, timestamp),
                                                                   _defectX(0), _defectY(0),
-                                                                  _defectX2sum(0), _defectY2sum(0) {
+                                                                  _defectX2sum(0.0),
+                                                                  _defectY2sum(0.0) {
         CalculateExplained();
     };
 
     VectorExplained(const cv::Point2d &source, double mulX, double mulY, unsigned int timestamp)
             : Vector(source.x * mulX, source.y * mulY, timestamp),
-              _defectX(0), _defectY(0), _defectX2sum(0), _defectY2sum(0) {
+              _defectX(0), _defectY(0), _defectX2sum(0.0), _defectY2sum(0.0) {
         CalculateExplained();
     };
 
@@ -162,12 +165,14 @@ public:
 #ifdef RECT_DEFECT
         Vector shifted = ShiftDefectRectToPointMagnet((float) other._x, (float) other._y, 1);
 #else
-        Vector shifted = EllipticalShiftMagnet(_defectX, _defectY, other.X(), other.Y());
+        Vector shifted = EllipticalShiftMagnet(_defectX, _defectY,
+                                               static_cast<float>(other.X()),
+                                               static_cast<float>(other.Y()));
 #endif
         if (logLevel & LOG_VECTORS) {
             LOGI_NATIVE(
-                    "DistanceWithDefect (%.4f %.4f) shifted (%.4f, %.4f) to (%.4f, %.4f) distance = %.4f",
-                    _x, _y, shifted.X(), shifted.Y(), other.X(), other.Y(),
+                    "DistanceWithDefect (%.4f %.4f) +-(%.4f %.4f) shifted (%.4f, %.4f) to (%.4f, %.4f) distance = %.4f",
+                    _x, _y, _defectX, _defectY, shifted.X(), shifted.Y(), other.X(), other.Y(),
                     shifted.DistanceTo(other)
             );
         }
@@ -224,10 +229,10 @@ inline void VectorExplained::Reset() {
     _mod = 0;
     _angle = 0;
     _direction = 0;
-    _defectX = 0;
-    _defectY = 0;
-    _defectX2sum = 0;
-    _defectY2sum = 0;
+    _defectX = 0.0;
+    _defectY = 0.0;
+    _defectX2sum = 0.0;
+    _defectY2sum = 0.0;
 }
 
 

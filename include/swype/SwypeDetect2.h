@@ -8,6 +8,7 @@
 
 #include "SwypeDetectorBase.h"
 #include "SwypeCodeDetectorDelta2.h"
+#include "detection_results.h"
 
 /**
  * detects swype code (fixed-length and infinite)
@@ -89,6 +90,8 @@ public:
                     float *circleCoordinates, int circleCoordinatesLength,
                     int &actualCircleCoordinates);
 
+    void ProcessMat(const cv::Mat &frame, uint timestamp, DetectionResults &result);
+
     /**
      * same as ProcessMat, but receives raw frame data (1 byte per pixel)
      * and converts it into cv::Mat
@@ -109,6 +112,8 @@ public:
                       float *point, float *shift, float *defect,
                       float *circleCoordinates, int circleCoordinatesLength,
                       int &actualCircleCoordinates);
+
+    void ProcessFrame(const unsigned char *frame_i, uint timestamp, DetectionResults &result);
 
     /**
      * return time to fail, in ms

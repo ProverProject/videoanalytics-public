@@ -27,10 +27,6 @@ public:
      */
     double RmsContrast() const;
 
-    double getAvg() const {
-        return _avg255;
-    }
-
     void Configure(float minLuminanse, float minContrast) {
         _minLuminanse = minLuminanse;
         _minContrast = minContrast;
@@ -41,9 +37,16 @@ public:
     }
 
     bool IsContrastLow() {
-        double contrast = RmsContrast();
         //LOGI_NATIVE("avg: %.2ff, contrast: %.6f", _avg255, contrast);
-        return contrast < _minContrast;
+        return _contrast < _minContrast;
+    }
+
+    double GetAverageLuminance() {
+        return _avg255;
+    }
+
+    double GetContrast() {
+        return _contrast;
     }
 
 private:
@@ -56,6 +59,8 @@ private:
      * average luminosity; 0-255
      */
     double _avg255;
+
+    double _contrast;
 
     /**
      * minimal luminosity present in image
@@ -71,6 +76,7 @@ private:
     cv::Mat _window;
 
     float _minContrast = 0;
+
     float _minLuminanse = 0;
 
     /**

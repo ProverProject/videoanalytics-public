@@ -37,6 +37,7 @@ void Histogram::Fill(const cv::Mat &mat) {
         }
     }
     _avg255 = AvgMinMax(_min, _max);
+    _contrast = RmsContrast();
 }
 
 double Histogram::AvgMinMax(int &min, int &max) const {

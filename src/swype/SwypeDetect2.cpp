@@ -42,59 +42,58 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, int &state, 
                               int &message, float *point, float *shift, float *defect,
                               float *circleCoordinates, int circleCoordinatesLength,
                               int &actualCircleCoordinates) {
-    message = Message::None;
-    if (shouldIgnoreFrame(frame, state, message)) {
-        fillEmptyResponse(point, shift, defect, actualCircleCoordinates);
+
+    DetectionResults results(point, shift, defect, circleCoordinates, circleCoordinatesLength);
+    ProcessMat(frame, timestamp, results);
+    state = results._state;
+    index = results._index;
+    message = results._message;
+    actualCircleCoordinates = results._actualCircleCoordinates;
+}
+
+void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, DetectionResults &result) {
+    if (shouldIgnoreFrame(frame, result)) {
         //_shiftDetector.SetPrevFrame(frame);
         if (_state == DetectorState::WaitingToStartSwypeCode
             || _state == DetectorState::DetectingSwypeCode) {
             VectorExplained windowedShift(0, 0, timestamp);
             _swypeDetector.NextFrame(windowedShift);
             int msgTemp;
-            _swypeDetector.FillResult(_state, index, msgTemp);
+            _swypeDetector.FillResult(_state, result._index, msgTemp);
             if (msgTemp != 0)
-                message = msgTemp;
-            state = _state;
+                result._message = msgTemp;
+            result._state = _state;
         }
         return;
     }
 
     VectorExplained windowedShift = _shiftDetector.ShiftToPrevFrame(frame, timestamp);
-    if (shift != nullptr) {
-        windowedShift.toFloatArray(shift);
-    }
+    result.SetShift(windowedShift);
 
     if (_state == DetectorState::WaitingForCircle) {
-        bool gotCircle = SwypeDetectorBase::DetectCircle(windowedShift,
-                                                         circleCoordinates, circleCoordinatesLength,
-                                                         actualCircleCoordinates, message);
+        bool gotCircle = SwypeDetectorBase::DetectCircle(windowedShift, result);
         if (gotCircle && _swypeDetector.IsInitialised()) {
             _swypeDetector.Start(timestamp + PAUSE_TO_ST3);
             _circleDetector.Clear();
             _state = DetectorState::WaitingToStartSwypeCode;
         }
-    } else {
-        actualCircleCoordinates = 0;
     }
 
     if (_state <= DetectorState::WaitingForCircle) {
-        index = 1;
-        state = _state;
-        point[0] = 0;
-        point[1] = 0;
-        defect[0] = 0;
-        defect[1] = 0;
+        result._index = 1;
+        result._state = _state;
     } else {
         _swypeDetector.NextFrame(windowedShift);
-        _swypeDetector.FillResult(_state, index, message);
-        _swypeDetector.GetCurrentVector(point, defect);
+        _swypeDetector.FillResult(_state, result._index, result._message);
+        _swypeDetector.GetCurrentVector(result._point, result._defect);
         if (_swypeDetector.IsStepFinished())
             _swypeDetector.AdvanceStep();
-        state = _state;
+        result._state = _state;
     }
-    if (logLevel & LOG_GENERAL_DETECTION && point != nullptr) {
+    if (logLevel & LOG_GENERAL_DETECTION && result._point != nullptr) {
         LOGI_NATIVE("state: %d, index: %d, msg: %d, (%.2f, %.2f)",
-                    state, index, message, point[0], point[1]);
+                    result._state, result._index, result._message,
+                    result._point[0], result._point[1]);
     }
 }
 
@@ -110,8 +109,19 @@ void SwypeDetect2::ProcessFrame(const unsigned char *frame_i, uint timestamp, in
                                 float *defect, float *circleCoordinates,
                                 int circleCoordinatesLength, int &actualCircleCoordinates) {
     cv::Mat frame(_frameHeight, _frameWidth, CV_8UC1, (uchar *) frame_i);
-    ProcessMat(frame, timestamp, state, index, message, point, shift, defect,
-               circleCoordinates, circleCoordinatesLength, actualCircleCoordinates);
+
+    DetectionResults results(point, shift, defect, circleCoordinates, circleCoordinatesLength);
+    ProcessMat(frame, timestamp, results);
+    state = results._state;
+    index = results._index;
+    message = results._message;
+    actualCircleCoordinates = results._actualCircleCoordinates;
+}
+
+void
+SwypeDetect2::ProcessFrame(const unsigned char *frame_i, uint timestamp, DetectionResults &result) {
+    cv::Mat frame(_frameHeight, _frameWidth, CV_8UC1, (uchar *) frame_i);
+    ProcessMat(frame, timestamp, result);
 }
 
 void SwypeDetect2::SetSwypeCode(SwypeCode &code) {

@@ -41,14 +41,21 @@ bool
 SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, float *resultCoordinates,
                                 int resultCoordinatesLength, int &gotCircleCoordinates,
                                 int &message) {
-    gotCircleCoordinates = 0;
+    DetectionResults result(nullptr, nullptr, nullptr, resultCoordinates, resultCoordinatesLength);
+    bool res = DetectCircle(windowedShift, result);
+    message = result._message;
+    return res;
+}
+
+bool
+SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, DetectionResults &result) {
     if (windowedShift.Mod() > 0) {
         _circleDetector.AddShift(windowedShift);
         unsigned int checkCircleResult;
-        if (resultCoordinatesLength >= 10) {
-            checkCircleResult = _circleDetector.CheckCircle(resultCoordinates,
-                                                            resultCoordinatesLength,
-                                                            gotCircleCoordinates);
+        if (result._circleCoordinatesLength >= 10) {
+            checkCircleResult = _circleDetector.CheckCircle(result._circleCoordinates,
+                                                            result._circleCoordinatesLength,
+                                                            result._actualCircleCoordinates);
         } else {
             int tmp;
             checkCircleResult = _circleDetector.CheckCircle(tmp);
@@ -59,7 +66,7 @@ SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, float *res
 
             case CircleDetector::AreaTooSmall:
             case CircleDetector::CurveNotRoundEnough:
-                message = checkCircleResult << 1;
+                result._message = checkCircleResult << 1;
                 break;
 
             default:
@@ -72,17 +79,27 @@ SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, float *res
 
 bool
 SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &message) {
+    DetectionResults results(nullptr, nullptr, nullptr, nullptr, 0);
+    bool ret = shouldIgnoreFrame(frame, results);
+    state = results._state;
+    message = results._message;
+    return ret;
+}
+
+bool SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, DetectionResults &result) {
     if (_state == DetectorState::SwypeCodeDone) {
-        state = _state;
+        result._state = _state;
         return true;
     }
 
     if (!_swypeCodeSet) {
-        state = DetectorState::WaitingForCode;
+        result._state = DetectorState::WaitingForCode;
         return true;
     }
 
     _histogtam.Fill(frame);
+    result._luminance = _histogtam.GetAverageLuminance() / 255;
+    result._contrast = _histogtam.GetContrast();
 
     bool lowLuminance;
     bool lowContrast = false;
@@ -91,8 +108,8 @@ SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &mess
         if (logLevel && LOG_VECTORS)
             LOGI_NATIVE("detector reject frame: low lum: %d, low contrast: %d", lowLuminance,
                         lowContrast);
-        state = _state;
-        message = LuminanceLow;
+        result._state = _state;
+        result._message = LuminanceLow;
         return true;
     }
 
