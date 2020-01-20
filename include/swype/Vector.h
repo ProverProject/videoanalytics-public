@@ -11,9 +11,9 @@
 class Vector {
 public:
 
-    Vector() : _x(0), _y(0), _mod(0), _timestamp(0) {}
+    Vector() : _x(0), _y(0), _timestamp(0), _mod(0) {}
 
-    Vector(double x, double y) : _x(x), _y(y), _mod(sqrt(x * x + y * y)), _timestamp(0) {}
+    Vector(double x, double y) : _x(x), _y(y), _timestamp(0), _mod(sqrt(x * x + y * y)) {}
 
     Vector(double x, double y, unsigned int timestamp) : _x(x), _y(y), _timestamp(timestamp),
                                                          _mod(sqrt(x * x + y * y)) {}

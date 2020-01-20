@@ -13,7 +13,9 @@ class ShiftDetector {
 public:
     friend class DebugComparer;
 
-    ShiftDetector() {};
+    ShiftDetector() {
+        LOGI_NATIVE("cv version: %s", CV_VERSION);
+        };
 
     ShiftDetector(const ShiftDetector &source);
 
@@ -61,7 +63,10 @@ private:
 
     cv::UMat _tickFrame;
     cv::UMat _tockFrame;
-    cv::UMat _hann;
+    cv::UMat _hannWithBorder;
+
+    cv::UMat _tickFFT;
+    cv::UMat _tockFFT;
     bool _tickTock = false;
 
     double _videoAspect = 0.0;

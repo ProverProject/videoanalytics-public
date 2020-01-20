@@ -12,6 +12,7 @@
 class VectorExplained : public Vector {
 public:
     VectorExplained() : Vector(0.0, 0.0),
+                        _direction(0),
                         _defectX(0), _defectY(0), _defectX2sum(0.0),
                         _defectY2sum(0.0) {};
 

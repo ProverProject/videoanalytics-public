@@ -6,7 +6,7 @@
 #ifdef __ANDROID_API__
 
 #include <android/log.h>
-
+#include <linux/time.h>
 
 #define LOGI_NATIVE(...) ((void)__android_log_print(ANDROID_LOG_INFO, APPNAME, __VA_ARGS__))
 #define LOGE_NATIVE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, APPNAME, __VA_ARGS__))
@@ -36,6 +36,7 @@
 #define ACTUAL_SWYPE_HELPER_VERSION 2
 #define ACTUAL_SWYPE_DETECTOR_VERSION 2
 
+double deltaTimeMks(const struct timespec &ts2, const struct timespec &ts1);
 
 enum Message {
     /**

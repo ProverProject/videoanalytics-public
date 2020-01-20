@@ -2,6 +2,7 @@
 // Created by babay on 21.06.2018.
 //
 
+#include <swype/optimizedPhaseCorrelate.h>
 #include "swype/ShiftDetector.h"
 #include "swype/common.h"
 #include "swype/settings.h"
@@ -11,7 +12,6 @@ ShiftDetector::ShiftDetector(const ShiftDetector &source) :
         _detecttorHeight(source._detecttorHeight), _xMult(source._xMult), _yMult(source._yMult),
         _relativeDefect(source._relativeDefect) {
 }
-
 
 void
 ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sourceAspectRatio) {
@@ -25,6 +25,11 @@ ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sou
         _xMult = -2.0 / detectorWidth;
         _yMult = -2.0 / detectorHeight * _videoAspect;
     }
+    _hannWithBorder.release();
+    _tickFrame.release();
+    _tockFrame.release();
+    _tickFFT.release();
+    _tockFFT.release();
 
     if (logLevel > 0) {
         LOGI_NATIVE("SetDetectorSize (%d, %d) sourceAspect %f, -> (%f, %f)", detectorWidth,
@@ -36,7 +41,11 @@ VectorExplained
 ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
     if (_tickFrame.empty()) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
-        createHanningWindow(_hann, _tickFrame.size(), CV_64F); //  create Hanning window
+        cv::UMat hann;
+        createHanningWindow(hann, _tickFrame.size(), CV_64F); //  create Hanning window
+        doPaddedWindow(hann, _hannWithBorder);
+        doFFT(_tickFrame, _hannWithBorder, _tickFFT);
+
         _tickTock = false;
         return {0,0};
     }
@@ -46,10 +55,12 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
     _tickTock = !_tickTock;
     if (_tickTock) {
         frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
-        shift = phaseCorrelate(_tickFrame, _tockFrame, _hann); // we calculate a phase offset vector
+        doFFT(_tockFrame, _hannWithBorder, _tockFFT);
+        shift = myPhaseCorrelatePart2(_tickFFT, _tockFFT);
     } else {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
-        shift = phaseCorrelate(_tockFrame, _tickFrame, _hann); // we calculate a phase offset vector
+        doFFT(_tickFrame, _hannWithBorder, _tickFFT);
+        shift = myPhaseCorrelatePart2(_tockFFT, _tickFFT); // we calculate a phase offset vector
     }
     VectorExplained scaledShift(shift, _xMult, _yMult, timestamp);
     VectorExplained windowedShift = scaledShift;
@@ -63,6 +74,17 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
     return windowedShift;
 }
 
+/*
+    clock_gettime(CLOCK_REALTIME, &ts5);
+
+    double d1 = deltaTimeMks(ts2,ts1);
+    double d2 = deltaTimeMks(ts3,ts2);
+    double d3 = deltaTimeMks(ts4,ts3);
+    double d4 = deltaTimeMks(ts5,ts4);
+    double dAll = deltaTimeMks(ts5,ts1);
+    LOGI_NATIVE("ShiftToPrevFrame, mks: %.1lf; %.1lf; %.1lf; %.1lf; %.1lf\n", d1, d2, d3, d4, dAll);*/
+
+
 void ShiftDetector::SetPrevFrame(const cv::Mat &frame_i) {
     if (_tickTock) {
         frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
@@ -74,8 +96,8 @@ void ShiftDetector::SetPrevFrame(const cv::Mat &frame_i) {
 
 void ShiftDetector::SetBaseFrame(const cv::Mat &frame) {
     frame.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
-    if (_hann.empty()) {
-        createHanningWindow(_hann, _tickFrame.size(), CV_64F);
+    if (_hannWithBorder.empty()) {
+        createHanningWindow(_hannWithBorder, _tickFrame.size(), CV_64F);
     }
     _tickTock = false;
 }
@@ -83,12 +105,12 @@ void ShiftDetector::SetBaseFrame(const cv::Mat &frame) {
 VectorExplained ShiftDetector::ShiftToBaseFrame(const cv::Mat &frame, uint timestamp) {
     frame.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
 
-    if (_hann.empty()) {
-        createHanningWindow(_hann, _tockFrame.size(), CV_64F);
+    if (_hannWithBorder.empty()) {
+        createHanningWindow(_hannWithBorder, _tockFrame.size(), CV_64F);
     }
 
     const cv::Point2d &shift = phaseCorrelate(_tickFrame, _tockFrame,
-                                              _hann); // we calculate a phase offset vector
+                                              _hannWithBorder); // we calculate a phase offset vector
     VectorExplained scaledShift(shift, _xMult, _yMult, timestamp);
     scaledShift.setRelativeDefect(_relativeDefect);
 
