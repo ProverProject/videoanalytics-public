@@ -2,7 +2,6 @@
 // Created by babay on 21.06.2018.
 //
 
-#include <swype/optimizedPhaseCorrelate.h>
 #include "swype/ShiftDetector.h"
 #include "swype/common.h"
 #include "swype/settings.h"
@@ -38,7 +37,9 @@ ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sou
 }
 
 VectorExplained
-ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
+ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
+                                PhaseCorrelatePeaks *peaks,
+                                PhaseCorrelateDebugFrame *debugFrame) {
     if (_tickFrame.empty()) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         cv::UMat hann;
@@ -47,28 +48,32 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp) {
         doFFT(_tickFrame, _hannWithBorder, _tickFFT);
 
         _tickTock = false;
-        return {0,0};
+        return {0, 0};
     }
 
-    cv::Point2d shift;
+    Peak peak, peak2;
 
     _tickTock = !_tickTock;
     if (_tickTock) {
         frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
         doFFT(_tockFrame, _hannWithBorder, _tockFFT);
-        shift = myPhaseCorrelatePart2(_tickFFT, _tockFFT);
+        myPhaseCorrelatePart2(_tickFFT, _tockFFT, peak, &peak2, debugFrame);
     } else {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         doFFT(_tickFrame, _hannWithBorder, _tickFFT);
-        shift = myPhaseCorrelatePart2(_tockFFT, _tickFFT); // we calculate a phase offset vector
+        // we calculate a phase offset vector
+        myPhaseCorrelatePart2(_tockFFT, _tickFFT, peak, &peak2, debugFrame);
     }
-    VectorExplained scaledShift(shift, _xMult, _yMult, timestamp);
+    VectorExplained scaledShift(peak, _xMult, _yMult, timestamp);
     VectorExplained windowedShift = scaledShift;
     windowedShift.ApplyWindow(VECTOR_WINDOW_START, VECTOR_WINDOW_END);
     windowedShift.setRelativeDefect(_relativeDefect);
 
     if (logLevel & LOG_VECTORS) {
-        log1(timestamp, shift, scaledShift, windowedShift);
+        log1(timestamp, peak, scaledShift, windowedShift);
+    }
+    if (peaks != nullptr) {
+        peaks->Set(peak, peak2);
     }
 
     return windowedShift;

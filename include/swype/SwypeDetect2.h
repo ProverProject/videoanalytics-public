@@ -8,7 +8,7 @@
 
 #include "SwypeDetectorBase.h"
 #include "SwypeCodeDetectorDelta2.h"
-#include "detection_results.h"
+#include "DetectionResults.h"
 
 /**
  * detects swype code (fixed-length and infinite)
@@ -70,48 +70,10 @@ public:
      * If we wait for too much time entering swype code -- it's failed, wait for next circle.
      * @param frame - [in] frame to process
      * @param timestamp - [in] frame timestamp
-     * @param state - [out] swype detection state; see (@link DetectorState}
-     * @param index - [out] only for state==2, index of recognized digit of the swype-code
-     * @param message - [out] additional message, see #Message
-     * @param point - [out] detector point coordinated (cant' be null)
-     * @param shift - [out] shift to previous frame. can be null
-     * @param defect - [out] point's accumulated defect, can be null
-     * @param circleCoordinates - [out] circle detector coordinates (if array is long enough)
-     *                                        Here are the coordinates of a polyline that is a candidate to be a circle.
-     *                                        The polyline is almost closed (distance between start and end point is small).
-     *                                        The polyline might be close to a circle or not.
-     *                                        The polyline might be large enough to be a circle or not.
-     *                                        The polyline is shifted: it's geometrical center is at (0,0) (sum of all coordinates is 0)
-     * @param circleCoordinatesLength - [in] length of circleCoordinates (in floats)
-     * @param actualCircleCoordinates - actual amount of circle coordinates written
+     * @param result - detection results
      */
-    void ProcessMat(const cv::Mat &frame, uint timestamp, int &state, int &index, int &message,
-                    float *point, float *shift, float *defect,
-                    float *circleCoordinates, int circleCoordinatesLength,
-                    int &actualCircleCoordinates);
 
     void ProcessMat(const cv::Mat &frame, uint timestamp, DetectionResults &result);
-
-    /**
-     * same as ProcessMat, but receives raw frame data (1 byte per pixel)
-     * and converts it into cv::Mat
-     * @param frame_i
-     * @param timestamp
-     * @param state
-     * @param index
-     * @param message
-     * @param point
-     * @param shift
-     * @param defect
-     * @param circleCoordinates
-     * @param circleCoordinatesLength
-     * @param actualCircleCoordinates
-     */
-    void ProcessFrame(const unsigned char *frame_i,
-                      uint timestamp, int &state, int &index, int &message,
-                      float *point, float *shift, float *defect,
-                      float *circleCoordinates, int circleCoordinatesLength,
-                      int &actualCircleCoordinates);
 
     void ProcessFrame(const unsigned char *frame_i, uint timestamp, DetectionResults &result);
 
@@ -163,6 +125,8 @@ public:
     void SetSwypeCode(SwypeCode &code);
 
 private:
+    void OnIgnoringFrame(uint timestamp, DetectionResults &result);
+
     SwypeCodeDetectorDelta2 _swypeDetector{};
 
     int _frameWidth = 0;

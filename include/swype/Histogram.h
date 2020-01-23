@@ -33,7 +33,7 @@ public:
     }
 
     bool IsLuminanceLow() {
-        return _avg255 < _minLuminanse;
+        return _avg < _minLuminanse;
     }
 
     bool IsContrastLow() {
@@ -41,11 +41,11 @@ public:
         return _contrast < _minContrast;
     }
 
-    double GetAverageLuminance() {
-        return _avg255;
+    float GetAverageLuminance() {
+        return _avg;
     }
 
-    double GetContrast() {
+    float GetContrast() {
         return _contrast;
     }
 
@@ -56,11 +56,11 @@ private:
     double _weightSum;
 
     /**
-     * average luminosity; 0-255
+     * average luminosity; 0-1
      */
-    double _avg255;
+    float _avg;
 
-    double _contrast;
+    float _contrast;
 
     /**
      * minimal luminosity present in image

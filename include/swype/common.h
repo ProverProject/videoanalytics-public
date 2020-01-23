@@ -44,9 +44,9 @@ enum Message {
      */
             None = 0,
     /**
-     * Luminance or contrast low
+     * Low luminance or low contrast or not enough details or too many periodic details in frame.
      */
-            LuminanceLow = 1,
+            BadPicture = 1,
     /**
      * Swype code failed 'cause we've get out of detection bounds
      */

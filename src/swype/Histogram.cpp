@@ -36,8 +36,8 @@ void Histogram::Fill(const cv::Mat &mat) {
             _counters[pRow[j]] += pHannRow[j];
         }
     }
-    _avg255 = AvgMinMax(_min, _max);
-    _contrast = RmsContrast();
+    _avg = static_cast<float>(AvgMinMax(_min, _max) / 255);
+    _contrast = static_cast<float>(RmsContrast());
 }
 
 double Histogram::AvgMinMax(int &min, int &max) const {
@@ -58,10 +58,9 @@ double Histogram::AvgMinMax(int &min, int &max) const {
 }
 
 double Histogram::RmsContrast() const {
-    double avg = _avg255 / _f255;
     double sum = 0;
     for (int i = _min; i <= _max; ++i) {
-        double val = _floatValues[i] - avg;
+        float val = _floatValues[i] - _avg;
         sum += _counters[i] * val * val;
     }
     return sqrt(sum / _weightSum);

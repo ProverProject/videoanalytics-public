@@ -18,7 +18,7 @@
 #include "swype/ShiftDetector.h"
 #include "swype/SwypeCodeDetectorDelta.h"
 #include "swype/Histogram.h"
-#include "detection_results.h"
+#include "DetectionResults.h"
 
 class SwypeDetectorBase {
 protected:

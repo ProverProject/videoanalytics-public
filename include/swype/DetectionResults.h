@@ -2,8 +2,10 @@
 // Created by Babay on 11.01.2020.
 //
 
-#ifndef PROVER_DETECTION_RESULTS_H
-#define PROVER_DETECTION_RESULTS_H
+#ifndef PROVER_DETECTIONRESULTS_H
+#define PROVER_DETECTIONRESULTS_H
+
+#include "optimizedPhaseCorrelate.h"
 
 struct DetectionResults {
     /**
@@ -23,6 +25,14 @@ struct DetectionResults {
      * filled after detection
      */
     int _message;
+
+    /**
+     * time to fail, in ms
+     * when time runs to 0, swype code will be failed
+     * if swype-code is finite, it's time to fail for entire swype-code
+     * if swype-code is infinite, it's time to fail for current swype step
+     */
+    int _timeToFailMs;
 
     /**
      * an array for detector point coordinated. an array of 2. can be null.
@@ -64,13 +74,20 @@ struct DetectionResults {
      * frame's luminance. 0-1.
      * filled after detection
      */
-    double _luminance;
+    float _luminance;
 
     /**
      * frame's contrast.
      * filled after detection
      */
-    double _contrast;
+    float _contrast;
+
+    /**
+     * phase correlation peaks info
+     */
+    PhaseCorrelatePeaks _peaks;
+
+    PhaseCorrelateDebugFrame *_correlatedFrame;
 
     /**\
      * @param point - an array for detector point coordinated. an array of 2. can be null.
@@ -89,6 +106,7 @@ struct DetectionResults {
             _state(DetectorState::WaitingForCode),
             _index(0),
             _message(Message::None),
+            _timeToFailMs(0),
             _point(point),
             _shift(shift),
             _defect(defect),
@@ -96,7 +114,8 @@ struct DetectionResults {
             _circleCoordinatesLength(circleCoordinatesLength),
             _actualCircleCoordinates(0),
             _luminance(0.0),
-            _contrast(0.0) {
+            _contrast(0.0),
+            _correlatedFrame(nullptr) {
         if (_point != nullptr) {
             _point[0] = 0;
             _point[1] = 0;
@@ -123,6 +142,18 @@ struct DetectionResults {
             _shift[1] = static_cast<float>(shift.Y());
         }
     }
+
+    inline bool IsLowLuminance() {
+        return _luminance < MIN_BRIGHTNESS_CLIENT;
+    }
+
+    inline bool IsContrastLow() {
+        return _contrast < MIN_CONTRAST_CLIENT;
+    }
+
+    inline bool IsPhaseCorrelateBad() {
+        return _peaks.IsPhaseCorrelateBad();
+    }
 };
 
-#endif //PROVER_DETECTION_RESULTS_H
+#endif //PROVER_DETECTIONRESULTS_H

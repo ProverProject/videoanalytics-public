@@ -38,6 +38,7 @@
 #include <swype/common.h>
 #include "swype/optimizedPhaseCorrelate.h"
 
+#define ERASE_PEAK_SIZE 11
 
 static void magSpectrums(cv::InputArray _src, cv::OutputArray _dst) {
     cv::Mat src = _src.getMat();
@@ -400,7 +401,7 @@ static void fftShift(cv::InputOutputArray _out) {
 }
 
 static cv::Point2d
-weightedCentroid(cv::InputArray _src, cv::Point peakLocation, cv::Size weightBoxSize,
+weightedCentroid(cv::InputArray _src, const cv::Point &peakLocation, cv::Size weightBoxSize,
                  double *response) {
     cv::Mat src = _src.getMat();
 
@@ -469,15 +470,106 @@ weightedCentroid(cv::InputArray _src, cv::Point peakLocation, cv::Size weightBox
     return centroid;
 }
 
-void copyScaled(cv::InputArray _src, double maxValue, uchar *_dst) {
+static void eraseAndStore(cv::InputOutputArray _src, const cv::Point &peakLocation, int size,
+                          double *tempStorage) {
+    cv::Mat src = _src.getMat();
+
+    int type = src.type();
+    CV_Assert(type == CV_64FC1);
+
+    int s = size >> 1;
+
+    int minr = peakLocation.y - s;
+    int maxr = peakLocation.y + s;
+    int minc = peakLocation.x - s;
+    int maxc = peakLocation.x + s;
+
+    // clamp the values to min and max if needed.
+    if (minr < 0) {
+        minr = 0;
+    }
+
+    if (minc < 0) {
+        minc = 0;
+    }
+
+    if (maxr > src.rows - 1) {
+        maxr = src.rows - 1;
+    }
+
+    if (maxc > src.cols - 1) {
+        maxc = src.cols - 1;
+    }
+
+
+    auto *dataIn = src.ptr<double>();
+    dataIn += minr * src.cols;
+    for (int y = minr; y <= maxr; y++) {
+        for (int x = minc; x <= maxc; x++) {
+            *tempStorage = dataIn[x];
+            ++tempStorage;
+            dataIn[x] = 0.0;
+        }
+        dataIn += src.cols;
+    }
+}
+
+static void
+restore(cv::InputOutputArray _src, const cv::Point &peakLocation, int size, double *tempStorage) {
+    cv::Mat src = _src.getMat();
+
+    int type = src.type();
+    CV_Assert(type == CV_64FC1);
+
+    int s = size >> 1;
+
+    int minr = peakLocation.y - s;
+    int maxr = peakLocation.y + s;
+    int minc = peakLocation.x - s;
+    int maxc = peakLocation.x + s;
+
+    // clamp the values to min and max if needed.
+    if (minr < 0) {
+        minr = 0;
+    }
+
+    if (minc < 0) {
+        minc = 0;
+    }
+
+    if (maxr > src.rows - 1) {
+        maxr = src.rows - 1;
+    }
+
+    if (maxc > src.cols - 1) {
+        maxc = src.cols - 1;
+    }
+
+    auto *dataIn = src.ptr<double>();
+    dataIn += minr * src.cols;
+    for (int y = minr; y <= maxr; y++) {
+        for (int x = minc; x <= maxc; x++) {
+            dataIn[x] = *tempStorage;
+            ++tempStorage;
+        }
+        dataIn += src.cols;
+    }
+}
+
+void copyScaled(cv::InputArray _src, double maxValue, PhaseCorrelateDebugFrame *debugFrame) {
+
     cv::Mat src = _src.getMat();
     int type = src.type();
     CV_Assert(type == CV_32FC1 || type == CV_64FC1);
 
-    int cols = src.cols;
-    int rows = src.rows;
+    if (debugFrame == nullptr || debugFrame->_size < src.cols * src.rows) {
+        return;
+    }
+    debugFrame->_width = src.cols;
+    debugFrame->_height = src.rows;
 
-    int size = cols * rows;
+    auto *_dst = reinterpret_cast<uchar *>( debugFrame->_pData);
+    int size = src.cols * src.rows;
 
     double scale = 255 / pow(maxValue, 0.5);
 
@@ -551,9 +643,25 @@ void doFFT(cv::InputArray _src, cv::InputArray _paddedWindow, cv::OutputArray _d
     dft(paddedWindowed, _dst, cv::DFT_REAL_OUTPUT);
 }
 
+Peak getPeak(cv::Point &peakLoc, cv::InputArray _src) {
+    cv::Mat src = _src.getMat();
 
-cv::Point2d myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
-                                  uchar *phaseDebug, int phaseDebugSize, int *actualDebugSize) {
+    // get the phase shift with sub-pixel accuracy, 5x5 window seems about right here...
+    Peak result;
+    cv::Point2d t = weightedCentroid(src, peakLoc, cv::Size(5, 5), &(result._weightedCentroid));
+
+    result.x = (double) src.cols / 2.0 - t.x;
+    result.y = (double) src.rows / 2.0 - t.y;
+
+    const double *dataIn = src.ptr<double>();
+    dataIn += peakLoc.y * src.cols + peakLoc.x;
+    result._value = *dataIn;
+    return result;
+}
+
+void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
+                           Peak &peak1, Peak *peak2,
+                           PhaseCorrelateDebugFrame *debugFrame) {
     cv::UMat FFT1 = _FFT1.getUMat();
     cv::UMat FFT2 = _FFT2.getUMat();
 
@@ -574,22 +682,19 @@ cv::Point2d myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
 
     // locate the highest peak
     cv::Point peakLoc;
-    minMaxLoc(C, NULL, NULL, NULL, &peakLoc);
+    minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc);
+    peak1 = getPeak(peakLoc, C);
 
-    double max;
-
-    // get the phase shift with sub-pixel accuracy, 5x5 window seems about right here...
-    cv::Point2d t;
-    t = weightedCentroid(C, peakLoc, cv::Size(5, 5), &max);
-
-    // adjust shift relative to image center...
-    cv::Point2d center((double) FFT1.cols / 2.0, (double) FFT1.rows / 2.0);
-
-    if (phaseDebug != nullptr && actualDebugSize != nullptr && phaseDebugSize >= C.cols * C.rows) {
-        copyScaled(C, max, phaseDebug);
-        actualDebugSize[0] = C.cols;
-        actualDebugSize[1] = C.rows;
+    if (peak2 != nullptr) {
+        double tmp[ERASE_PEAK_SIZE * ERASE_PEAK_SIZE];
+        cv::Point peakLoc2;
+        eraseAndStore(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+        minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc2);
+        restore(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+        *peak2 = getPeak(peakLoc2, C);
     }
 
-    return (center - t);
+    if (debugFrame != nullptr) {
+        copyScaled(C, peak1._value, debugFrame);
+    }
 }

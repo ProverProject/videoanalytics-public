@@ -8,6 +8,8 @@
 
 #include <opencv2/core/mat.hpp>
 #include "swype/VectorExplained.h"
+#include "PhaseCorrelatePeaks.h"
+#include "optimizedPhaseCorrelate.h"
 
 class ShiftDetector {
 public:
@@ -15,7 +17,7 @@ public:
 
     ShiftDetector() {
         LOGI_NATIVE("cv version: %s", CV_VERSION);
-        };
+    };
 
     ShiftDetector(const ShiftDetector &source);
 
@@ -29,7 +31,9 @@ public:
      */
 
     VectorExplained
-    ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp);
+    ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
+                     PhaseCorrelatePeaks *peaks = nullptr,
+                     PhaseCorrelateDebugFrame *debugFrame = nullptr);
 
     void SetPrevFrame(const cv::Mat &frame_i);
 
@@ -77,7 +81,5 @@ private:
 
     double _relativeDefect;// relaxed ? DEFECT : DEFECT_CLIENT
 };
-
-
 
 #endif //SWYPE_SHIFTDETECTOR_H
