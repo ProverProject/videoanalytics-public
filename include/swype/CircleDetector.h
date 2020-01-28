@@ -9,7 +9,7 @@
 #include "swype/VectorExplained.h"
 #include "swype/ValueWithDefect.h"
 
-#define SHIFTS 64
+#define SHIFTS 128
 
 #define MAX_CIRCLE_DURATION_MS 2000
 

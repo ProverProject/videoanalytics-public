@@ -88,7 +88,7 @@ public:
 
     /**
      * initialises detector
-     * @param sourceAspectRatio - initial video aspect ratio
+     * @param sourceAspectRatio - initial video aspect ratio (source video width/height)
      * @param detectorWidth - detector frame width
      * @param detectorHeight - detector frame height
      */

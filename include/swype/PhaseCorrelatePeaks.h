@@ -42,7 +42,19 @@ public:
     }
 
     inline bool IsPhaseCorrelateBad() const {
-        return WeightedCentroidRatio() > MAX_PHASE_CORRELATE_PEAK_RELATION;
+        double wCentrRatio = WeightedCentroidRatio();
+        double peakRatio = PeakRatio();
+        double  ptc = PeakToCentroid();
+
+        if (wCentrRatio < -0.2 || wCentrRatio > 0.5 || peakRatio > 0.8)
+            return true;
+        if (fabs(wCentrRatio) < 0.2)
+            return false;
+
+        return wCentrRatio < -0.2
+                || ptc < 0
+                || peakRatio > 0.7
+                || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
     }
 
     inline double PeakRatio() const {
@@ -51,6 +63,10 @@ public:
 
     inline double WeightedCentroidRatio() const {
         return _secondPeak._weightedCentroid / _peak._weightedCentroid;
+    }
+
+    inline double PeakToCentroid() const {
+        return _peak._value / _peak._weightedCentroid;
     }
 
     inline const Peak &getPeak() const {

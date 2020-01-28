@@ -38,7 +38,7 @@
 #include <swype/common.h>
 #include "swype/optimizedPhaseCorrelate.h"
 
-#define ERASE_PEAK_SIZE 11
+#define ERASE_PEAK_SIZE 25
 
 static void magSpectrums(cv::InputArray _src, cv::OutputArray _dst) {
     cv::Mat src = _src.getMat();
@@ -479,9 +479,9 @@ static void eraseAndStore(cv::InputOutputArray _src, const cv::Point &peakLocati
 
     int s = size >> 1;
 
-    int minr = peakLocation.y - s;
+    int minr = peakLocation.y - s ;
     int maxr = peakLocation.y + s;
-    int minc = peakLocation.x - s;
+    int minc = peakLocation.x - s ;
     int maxc = peakLocation.x + s;
 
     // clamp the values to min and max if needed.
@@ -501,16 +501,16 @@ static void eraseAndStore(cv::InputOutputArray _src, const cv::Point &peakLocati
         maxc = src.cols - 1;
     }
 
+    int rowPart = maxc - minc + 1;
+    size_t rowPartSize = rowPart * sizeof(double);
 
     auto *dataIn = src.ptr<double>();
-    dataIn += minr * src.cols;
+    dataIn += minr * src.cols + minc ;
     for (int y = minr; y <= maxr; y++) {
-        for (int x = minc; x <= maxc; x++) {
-            *tempStorage = dataIn[x];
-            ++tempStorage;
-            dataIn[x] = 0.0;
-        }
+        memcpy(tempStorage, dataIn, rowPartSize);
+        memset(dataIn, 0, rowPartSize);
         dataIn += src.cols;
+        tempStorage += rowPart;
     }
 }
 
@@ -545,14 +545,15 @@ restore(cv::InputOutputArray _src, const cv::Point &peakLocation, int size, doub
         maxc = src.cols - 1;
     }
 
-    auto *dataIn = src.ptr<double>();
-    dataIn += minr * src.cols;
+    int rowPart = maxc - minc + 1;
+    size_t rowPartSize = rowPart * sizeof(double);
+
+    auto *data = src.ptr<double>();
+    data += minr * src.cols + minc ;
     for (int y = minr; y <= maxr; y++) {
-        for (int x = minc; x <= maxc; x++) {
-            dataIn[x] = *tempStorage;
-            ++tempStorage;
-        }
-        dataIn += src.cols;
+        memcpy(data, tempStorage, rowPartSize);
+        data += src.cols;
+        tempStorage += rowPart;
     }
 }
 

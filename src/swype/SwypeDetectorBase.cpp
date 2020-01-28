@@ -88,12 +88,10 @@ SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, int &state, int &mess
 
 bool SwypeDetectorBase::shouldIgnoreFrame(const cv::Mat &frame, DetectionResults &result) {
     if (_state == DetectorState::SwypeCodeDone) {
-        result._state = _state;
         return true;
     }
 
     if (!_swypeCodeSet) {
-        result._state = DetectorState::WaitingForCode;
         return true;
     }
 
