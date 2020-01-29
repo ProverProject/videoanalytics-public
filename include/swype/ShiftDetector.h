@@ -16,7 +16,7 @@ public:
     friend class DebugComparer;
 
     ShiftDetector() {
-        LOGI_NATIVE("cv version: %s", CV_VERSION);
+        //LOGI_NATIVE("cv version: %s", CV_VERSION);
     };
 
     ShiftDetector(const ShiftDetector &source);
