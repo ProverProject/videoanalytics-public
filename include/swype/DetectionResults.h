@@ -35,7 +35,7 @@ struct DetectionResults {
     int _timeToFailMs;
 
     /**
-     * an array for detector point coordinated. an array of 2. can be null.
+     * an array for detector point coordinates. an array of 2. can be null.
      * filled after detection
      */
     float *_point;

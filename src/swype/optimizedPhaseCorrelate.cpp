@@ -35,10 +35,45 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
-#include <swype/common.h>
+#include "swype/common.h"
 #include "swype/optimizedPhaseCorrelate.h"
 
 #define ERASE_PEAK_SIZE 25
+
+struct SubMatRect {
+    int minr;
+    int maxr;
+    int minc;
+    int maxc;
+
+    SubMatRect(cv::InputArray _src, int size, int x, int y) {
+        int cols = _src.cols();
+        int rows = _src.rows();
+        int s = size >> 1;
+
+        minr = y - s;
+        maxr = y + s;
+        minc = x - s;
+        maxc = x + s;
+
+        // clamp the values to min and max if needed.
+        if (minr < 0) {
+            minr = 0;
+        }
+
+        if (minc < 0) {
+            minc = 0;
+        }
+
+        if (maxr > rows - 1) {
+            maxr = rows - 1;
+        }
+
+        if (maxc > cols - 1) {
+            maxc = cols - 1;
+        }
+    }
+};
 
 static void magSpectrums(cv::InputArray _src, cv::OutputArray _dst) {
     cv::Mat src = _src.getMat();
@@ -400,63 +435,27 @@ static void fftShift(cv::InputOutputArray _out) {
     merge(planes, out);
 }
 
+template<class _Tp>
 static cv::Point2d
-weightedCentroid(cv::InputArray _src, const cv::Point &peakLocation, cv::Size weightBoxSize,
+weightedCentroid(cv::InputArray _src, const cv::Point &peakLocation, int weightBoxSize,
                  double *response) {
     cv::Mat src = _src.getMat();
 
-    int type = src.type();
-    CV_Assert(type == CV_32FC1 || type == CV_64FC1);
-
-    int minr = peakLocation.y - (weightBoxSize.height >> 1);
-    int maxr = peakLocation.y + (weightBoxSize.height >> 1);
-    int minc = peakLocation.x - (weightBoxSize.width >> 1);
-    int maxc = peakLocation.x + (weightBoxSize.width >> 1);
+    SubMatRect rc(_src, weightBoxSize, peakLocation.x, peakLocation.y);
 
     cv::Point2d centroid;
     double sumIntensity = 0.0;
 
-    // clamp the values to min and max if needed.
-    if (minr < 0) {
-        minr = 0;
-    }
-
-    if (minc < 0) {
-        minc = 0;
-    }
-
-    if (maxr > src.rows - 1) {
-        maxr = src.rows - 1;
-    }
-
-    if (maxc > src.cols - 1) {
-        maxc = src.cols - 1;
-    }
-
-    if (type == CV_32FC1) {
-        const float *dataIn = src.ptr<float>();
-        dataIn += minr * src.cols;
-        for (int y = minr; y <= maxr; y++) {
-            for (int x = minc; x <= maxc; x++) {
-                centroid.x += (double) x * dataIn[x];
-                centroid.y += (double) y * dataIn[x];
-                sumIntensity += (double) dataIn[x];
-            }
-
-            dataIn += src.cols;
+    const _Tp *dataIn = src.ptr<_Tp>();
+    dataIn += rc.minr * src.cols;
+    for (int y = rc.minr; y <= rc.maxr; y++) {
+        for (int x = rc.minc; x <= rc.maxc; x++) {
+            centroid.x += (double) x * dataIn[x];
+            centroid.y += (double) y * dataIn[x];
+            sumIntensity += (double) dataIn[x];
         }
-    } else {
-        const double *dataIn = src.ptr<double>();
-        dataIn += minr * src.cols;
-        for (int y = minr; y <= maxr; y++) {
-            for (int x = minc; x <= maxc; x++) {
-                centroid.x += (double) x * dataIn[x];
-                centroid.y += (double) y * dataIn[x];
-                sumIntensity += dataIn[x];
-            }
 
-            dataIn += src.cols;
-        }
+        dataIn += src.cols;
     }
 
     if (response)
@@ -470,43 +469,19 @@ weightedCentroid(cv::InputArray _src, const cv::Point &peakLocation, cv::Size we
     return centroid;
 }
 
+template<class _Tp>
 static void eraseAndStore(cv::InputOutputArray _src, const cv::Point &peakLocation, int size,
                           double *tempStorage) {
+    SubMatRect rc(_src, size, peakLocation.x, peakLocation.y);
+
     cv::Mat src = _src.getMat();
 
-    int type = src.type();
-    CV_Assert(type == CV_64FC1);
+    int rowPart = rc.maxc - rc.minc + 1;
+    size_t rowPartSize = rowPart * sizeof(_Tp);
 
-    int s = size >> 1;
-
-    int minr = peakLocation.y - s ;
-    int maxr = peakLocation.y + s;
-    int minc = peakLocation.x - s ;
-    int maxc = peakLocation.x + s;
-
-    // clamp the values to min and max if needed.
-    if (minr < 0) {
-        minr = 0;
-    }
-
-    if (minc < 0) {
-        minc = 0;
-    }
-
-    if (maxr > src.rows - 1) {
-        maxr = src.rows - 1;
-    }
-
-    if (maxc > src.cols - 1) {
-        maxc = src.cols - 1;
-    }
-
-    int rowPart = maxc - minc + 1;
-    size_t rowPartSize = rowPart * sizeof(double);
-
-    auto *dataIn = src.ptr<double>();
-    dataIn += minr * src.cols + minc ;
-    for (int y = minr; y <= maxr; y++) {
+    auto *dataIn = src.ptr<_Tp>();
+    dataIn += rc.minr * src.cols + rc.minc;
+    for (int y = rc.minr; y <= rc.maxr; y++) {
         memcpy(tempStorage, dataIn, rowPartSize);
         memset(dataIn, 0, rowPartSize);
         dataIn += src.cols;
@@ -514,54 +489,29 @@ static void eraseAndStore(cv::InputOutputArray _src, const cv::Point &peakLocati
     }
 }
 
+template<class _Tp>
 static void
 restore(cv::InputOutputArray _src, const cv::Point &peakLocation, int size, double *tempStorage) {
+    SubMatRect rc(_src, size, peakLocation.x, peakLocation.y);
+
     cv::Mat src = _src.getMat();
 
-    int type = src.type();
-    CV_Assert(type == CV_64FC1);
+    int rowPart = rc.maxc - rc.minc + 1;
+    size_t rowPartSize = rowPart * sizeof(_Tp);
 
-    int s = size >> 1;
-
-    int minr = peakLocation.y - s;
-    int maxr = peakLocation.y + s;
-    int minc = peakLocation.x - s;
-    int maxc = peakLocation.x + s;
-
-    // clamp the values to min and max if needed.
-    if (minr < 0) {
-        minr = 0;
-    }
-
-    if (minc < 0) {
-        minc = 0;
-    }
-
-    if (maxr > src.rows - 1) {
-        maxr = src.rows - 1;
-    }
-
-    if (maxc > src.cols - 1) {
-        maxc = src.cols - 1;
-    }
-
-    int rowPart = maxc - minc + 1;
-    size_t rowPartSize = rowPart * sizeof(double);
-
-    auto *data = src.ptr<double>();
-    data += minr * src.cols + minc ;
-    for (int y = minr; y <= maxr; y++) {
+    auto *data = src.ptr<_Tp>();
+    data += rc.minr * src.cols + rc.minc;
+    for (int y = rc.minr; y <= rc.maxr; y++) {
         memcpy(data, tempStorage, rowPartSize);
         data += src.cols;
         tempStorage += rowPart;
     }
 }
 
+template<class _Tp>
 void copyScaled(cv::InputArray _src, double maxValue, PhaseCorrelateDebugFrame *debugFrame) {
 
     cv::Mat src = _src.getMat();
-    int type = src.type();
-    CV_Assert(type == CV_32FC1 || type == CV_64FC1);
 
     if (debugFrame == nullptr || debugFrame->_size < src.cols * src.rows) {
         return;
@@ -574,29 +524,16 @@ void copyScaled(cv::InputArray _src, double maxValue, PhaseCorrelateDebugFrame *
 
     double scale = 255 / pow(maxValue, 0.5);
 
-    if (type == CV_32FC1) {
-        const float *dataIn = src.ptr<float>();
+    const _Tp *dataIn = src.ptr<_Tp>();
 
-        for (int i = 0; i < size; ++i) {
-            if (*dataIn < 0) {
-                *_dst = 0;
-            } else {
-                *_dst = static_cast<uchar>(pow(*dataIn, 0.5) * scale);
-            }
-            ++dataIn;
-            ++_dst;
+    for (int i = 0; i < size; ++i) {
+        if (*dataIn < 0) {
+            *_dst = 0;
+        } else {
+            *_dst = static_cast<uchar>(pow(*dataIn, 0.5) * scale);
         }
-    } else if (type == CV_64FC1) {
-        const double *dataIn = src.ptr<double>();
-        for (int i = 0; i < size; ++i) {
-            if (*dataIn < 0) {
-                *_dst = 0;
-            } else {
-                *_dst = static_cast<uchar>(pow(*dataIn, 0.5) * scale);
-            }
-            ++dataIn;
-            ++_dst;
-        }
+        ++dataIn;
+        ++_dst;
     }
 }
 
@@ -644,31 +581,29 @@ void doFFT(cv::InputArray _src, cv::InputArray _paddedWindow, cv::OutputArray _d
     dft(paddedWindowed, _dst, cv::DFT_REAL_OUTPUT);
 }
 
+template<class _Tp>
 Peak getPeak(cv::Point &peakLoc, cv::InputArray _src) {
     cv::Mat src = _src.getMat();
 
     // get the phase shift with sub-pixel accuracy, 5x5 window seems about right here...
     Peak result;
-    cv::Point2d t = weightedCentroid(src, peakLoc, cv::Size(5, 5), &(result._weightedCentroid));
+    cv::Point2d t = weightedCentroid<_Tp>(src, peakLoc, 5, &(result._weightedCentroid));
 
     result.x = (double) src.cols / 2.0 - t.x;
     result.y = (double) src.rows / 2.0 - t.y;
 
-    const double *dataIn = src.ptr<double>();
+    const _Tp *dataIn = src.ptr<_Tp>();
     dataIn += peakLoc.y * src.cols + peakLoc.x;
     result._value = *dataIn;
     return result;
 }
 
-void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
-                           Peak &peak1, Peak *peak2,
-                           PhaseCorrelateDebugFrame *debugFrame) {
+template<class _Tp>
+void myPhaseCorrelatePart2T(cv::InputArray _FFT1, cv::InputArray _FFT2,
+                            Peak &peak1, Peak *peak2,
+                            PhaseCorrelateDebugFrame *debugFrame) {
     cv::UMat FFT1 = _FFT1.getUMat();
     cv::UMat FFT2 = _FFT2.getUMat();
-
-    CV_Assert(FFT1.type() == FFT2.type());
-    CV_Assert(FFT1.type() == CV_32FC1 || FFT1.type() == CV_64FC1);
-    CV_Assert(FFT1.size == FFT2.size);
 
     cv::UMat P, Pm, C;
 
@@ -684,18 +619,35 @@ void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
     // locate the highest peak
     cv::Point peakLoc;
     minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc);
-    peak1 = getPeak(peakLoc, C);
+    peak1 = getPeak<_Tp>(peakLoc, C);
 
     if (peak2 != nullptr) {
         double tmp[ERASE_PEAK_SIZE * ERASE_PEAK_SIZE];
         cv::Point peakLoc2;
-        eraseAndStore(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+        eraseAndStore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
         minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc2);
-        restore(C, peakLoc, ERASE_PEAK_SIZE, tmp);
-        *peak2 = getPeak(peakLoc2, C);
+        restore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+        *peak2 = getPeak<_Tp>(peakLoc2, C);
     }
 
     if (debugFrame != nullptr) {
-        copyScaled(C, peak1._value, debugFrame);
+        copyScaled<_Tp>(C, peak1._value, debugFrame);
+    }
+}
+
+void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
+                           Peak &peak1, Peak *peak2,
+                           PhaseCorrelateDebugFrame *debugFrame) {
+    int type = _FFT1.type();
+
+    CV_Assert(type == _FFT2.type());
+    CV_Assert(_FFT1.size() == _FFT2.size());
+
+    if (type == CV_32FC1) {
+        myPhaseCorrelatePart2T<float>(_FFT1, _FFT2, peak1, peak2, debugFrame);
+    } else if (type == CV_64FC1) {
+        myPhaseCorrelatePart2T<double>(_FFT1, _FFT2, peak1, peak2, debugFrame);
+    } else {
+        CV_Assert(type == CV_32FC1 || type == CV_64FC1);
     }
 }

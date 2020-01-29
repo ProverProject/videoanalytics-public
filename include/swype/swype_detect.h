@@ -235,7 +235,7 @@ public:
      * @param state - [out] swype detection state; see (@link DetectorState}
      * @param index - [out] only for state==2, index of recognized digit of the swype-code
      * @param message - [out] additional message, see #Message
-     * @param point - [out] detector point coordinated (cant' be null)
+     * @param point - [out] detector point coordinates (cant' be null)
      * @param shift - [out] shift to previous frame. can be null
      * @param defect - [out] point's accumulated defect, can be null
      * @param circleCoordinates - [out] circle detector coordinates (if array is long enough)

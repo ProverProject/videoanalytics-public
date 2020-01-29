@@ -2,7 +2,7 @@
 // Created by babay on 29.07.2019.
 //
 
-#include <swype/PhaseCorrelatePeaks.h>
+#include "swype/PhaseCorrelatePeaks.h"
 #include "swype/SwypeDetect2.h"
 
 void SwypeDetect2::init(double sourceAspectRatio, int detectorWidth, int detectorHeight) {

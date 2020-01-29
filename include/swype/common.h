@@ -57,7 +57,7 @@ enum Message {
             SwypeFailTimeout = 3,
 
     /**
-     * Swype code failed 'cause of timeout
+     * Swype step finished
      */
             SwypeStepFinished = 5,
     /**
