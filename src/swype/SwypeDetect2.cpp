@@ -131,7 +131,21 @@ void SwypeDetect2::OnIgnoringFrame(uint timestamp, DetectionResults &result) {
     switch (_state) {
         case DetectorState::WaitingToStartSwypeCode:
         case DetectorState::DetectingSwypeCode:
+#ifdef RESET_DETECTOR_ON_BAD_PICTURE
             _state = result._state = DetectorState::WaitingForCircle;
+#else
+        {
+            VectorExplained windowedShift(0, 0, timestamp);
+            _swypeDetector.NextFrame(windowedShift);
+            int msgTemp;
+            _swypeDetector.FillResult(_state, result._index, msgTemp);
+            _swypeDetector.GetCurrentVector(result._point, result._defect);
+            if (msgTemp != 0)
+                result._message = msgTemp;
+            result._state = _state;
+            result._timeToFailMs = TimeToFailMs();
+        }
+#endif
             break;
 
         case DetectorState::WaitingForCode:
