@@ -5,7 +5,7 @@
 #include "swype/SwypeCodeDetectorDelta2.h"
 #include "swype/DetectorState.h"
 
-void SwypeCodeDetectorDelta2::SetNextStep(SwypeStep step) {
+void SwypeCodeDetectorDelta2::SetNextStep(const SwypeStep &step) {
     _nextStep = step;
     if (logLevel & LOG_GENERAL_DETECTION) {
         LOGI_NATIVE("set swype next step. num: %d, dir: %d, dur: %d",
@@ -55,7 +55,7 @@ void SwypeCodeDetectorDelta2::AdvanceStep() {
     }
 }
 
-void SwypeCodeDetectorDelta2::SetSwypeCode(SwypeCode &code) {
+void SwypeCodeDetectorDelta2::SetSwypeCode(const SwypeCode &code) {
     if (code.IsEmpty()) {
         Reset(true);
         _useSwypeCode = false;

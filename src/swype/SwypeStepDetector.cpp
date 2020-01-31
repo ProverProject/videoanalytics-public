@@ -7,7 +7,7 @@
 #include "swype/settings.h"
 
 void SwypeStepDetector::Add(VectorExplained shift) {
-    shift.Mul(_parameters._speedMultX, _parameters._speedMultY);
+    shift.Mul(_parameters.SpeedMultX(), _parameters.SpeedMultY());
 
     _current.Add(shift);
     _current.SetTimestamp(shift.Timestamp());
@@ -16,7 +16,7 @@ void SwypeStepDetector::Add(VectorExplained shift) {
 }
 
 void SwypeStepDetector::Set(VectorExplained total) {
-    total.Mul(_parameters._speedMultX, _parameters._speedMultY);
+    total.Mul(_parameters.SpeedMultX(), _parameters.SpeedMultY());
     _current = total;
     _count++;
 }
@@ -30,7 +30,7 @@ void SwypeStepDetector::Reset() {
 
 void SwypeStepDetector::Configure(DetectorParameters parameters) {
     _parameters = parameters;
-    _targetRadius = parameters._targetRadius;
+    _targetRadius = parameters.TargetRadius();
 }
 
 void SwypeStepDetector::FinishStep() {
@@ -91,36 +91,16 @@ void SwypeStepDetector::AdvanceDirection(int dir) {
 void SwypeStepDetector::SetTarget(const VectorExplained &target) {
     _target = target;
 
-    _targetRadius = _parameters._targetRadius;
-    if (_parameters._relaxed && _target.Direction() % 2 == 0) {// for diagonal target at server
+    _targetRadius = _parameters.TargetRadius();
+    if (_parameters.IsRelaxed() && _target.Direction() % 2 == 0) {// for diagonal target at server
         _targetRadius *= DIAGONAL_TARGET_RADIUS_MULT;
     }
 
     _boundsChecker.SetDirection(_target.Direction());
-    _boundsChecker.SetTargetRadius(_targetRadius, _parameters._targetRadius);
+    _boundsChecker.SetTargetRadius(_targetRadius, _parameters.TargetRadius());
 
     if (logLevel & LOG_GENERAL_DETECTION) {
         LOGI_NATIVE("SetTarget %d (%.1f %.1f) d %d", _id, target.X(), target.Y(),
                     target.Direction());
     }
-}
-
-bool
-SwypeStepDetector::CheckCompleteStep(int direction, const std::vector<VectorExplained> &shifts) {
-    SetDirection(direction);
-    int state = 0;
-    for (unsigned int i = 0; i < shifts.size(); ++i) {
-        Add(shifts[i]);
-        state = CheckState(_parameters._relaxed);
-        if (state == -1)
-            return false;
-    }
-
-    if (logLevel & LOG_GENERAL_DETECTION) {
-        if (state == 1)
-            LOGI_NATIVE("SwypeStepDetector::CheckCompleteStep: target reached");
-        else
-            LOGI_NATIVE("SwypeStepDetector::CheckCompleteStep: target not reached");
-    }
-    return state == 1;
 }

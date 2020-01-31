@@ -53,9 +53,10 @@ Vector Vector::EllipticalShiftMagnet(float rx, float ry, float targetX, float ta
         return Vector(targetX, _y);
     }
 
-    // move to coordinates where our ellipse is radius-1 circle
+    // a vector (_x, _y)->(targetX,targetY)  transformed to coordinates where our ellipse is radius-1 circle
     Vector res = Vector((targetX - _x) / rx, (targetY - _y) / ry);
     double len = res.Length();
+    // target is inside radius-1 circle -- we reach target
     if (len <= 1)
         return Vector(targetX, targetY);
     //normalize -- point is on the circle

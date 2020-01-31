@@ -56,13 +56,20 @@ public:
      */
     void SetLength(double length);
 
-    void operator*=(double mul);
+    virtual void operator*=(double mul);
 
     inline void Mul(double xMul, double yMul) {
-        _x *= xMul;
-        _defectX *= xMul;
-        _y *= yMul;
-        _defectY *= yMul;
+        if (xMul == yMul) {
+            operator*=(xMul);
+        } else {
+            _x *= xMul;
+            _defectX *= xMul;
+            _y *= yMul;
+            _defectY *= yMul;
+
+            CalculateMod();
+            CalculateExplained();
+        }
     }
 
     bool CheckWithinRectWithDefect(float left, float top, float right, float bottom) const;

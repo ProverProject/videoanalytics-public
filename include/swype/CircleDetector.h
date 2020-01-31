@@ -39,6 +39,14 @@ public:
                 CurveNotRoundEnough = 4,
     };
 
+    CircleDetector() :
+            _pos(0),
+            _total(0),
+            _minCircleArea(MIN_CIRCLE_AREA),
+            _maxDeviation(MAX_DEVIATION),
+            _minAreaByP2toCircle(MIN_AREA_BY_P2_TO_CIRCLE),
+            _relaxed(false) {}
+
     void AddShift(const VectorExplained &shift);
 
     bool IsCircle() const;
@@ -60,26 +68,24 @@ public:
      */
     Result CheckCircle(int &curveLength) const;
 
-    void Reset() {
-        pos_ = 0;
-        total_ = 0;
-    }
-
     void SetRelaxed(bool relaxed);
 
-    void Clear();
+    void Clear() {
+        _pos = 0;
+        _total = 0;
+    }
 
 private:
     ValueWithDefect CalculateArea(int amount, ValueWithDefect &perimeter) const;
 
-    VectorExplained shifts_[SHIFTS];
-    int pos_ = 0;
-    int total_ = 0;
+    VectorExplained _shifts[SHIFTS];
+    int _pos;
+    int _total;
 
-    double _minCircleArea = MIN_CIRCLE_AREA;
-    double _maxDeviation = MAX_DEVIATION;
-    double _minAreaByP2toCircle = MIN_AREA_BY_P2_TO_CIRCLE;
-    bool _relaxed = true;
+    double _minCircleArea;
+    double _maxDeviation;
+    double _minAreaByP2toCircle;
+    bool _relaxed;
 };
 
 

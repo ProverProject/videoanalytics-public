@@ -23,7 +23,7 @@ public:
         _y += other._y;
     };
 
-    inline void operator*=(const double mul) {
+    virtual void operator*=(const double mul) {
         _x *= mul;
         _y *= mul;
     };

@@ -11,7 +11,10 @@
 #include "DetectionResults.h"
 
 /**
- * detects swype code (fixed-length and infinite)
+ * Detects swype code (fixed-length and infinite)
+ *
+ * The detector is designed to work in a single thread.
+ * All method calls must be in the same thread.
  *
  * First, initialise detector with Init() method.
  * Detector maintains a state. See {@link DetectorState} for details
@@ -123,6 +126,13 @@ public:
      * @param code
      */
     void SetSwypeCode(SwypeCode &code);
+
+    /**
+     * return target coordinates for specified direction
+     * @param direction - 1..8
+     * @param dst - an array of two
+     */
+    void GetTargetForDirection(int direction, double* dst);
 
 private:
     void OnIgnoringFrame(uint timestamp, DetectionResults &result);

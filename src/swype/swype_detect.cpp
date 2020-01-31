@@ -58,7 +58,7 @@ SwypeDetect::processFrameExt(const unsigned char *frame_i, int width_i, int heig
                              int resultCoordinatesLength, int &actualResultCoordinates) {
 
     Mat frame(height_i, width_i, CV_8UC1, (uchar *) frame_i);
-    _shiftDetector.UpdateDetectorSize(width_i, height_i);
+    CV_Assert(_detectorParameters.IsOfSize(width_i, height_i));
     processMatExt(frame, timestamp, state, index, message,
                   resultCoordinates, resultCoordinatesLength, actualResultCoordinates);
 }

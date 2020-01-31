@@ -10,8 +10,10 @@
 
 class SwypeCodeDetectorDelta2 : public SwypeCodeDetector {
 public:
+    SwypeCodeDetectorDelta2() : _nextStep{0, 0, 0},
+                                _useSwypeCode(false) {}
 
-    void SetNextStep(SwypeStep step);
+    void SetNextStep(const SwypeStep &step);
 
     void NextFrame(const VectorExplained &shift);
 
@@ -21,13 +23,13 @@ public:
 
     void AdvanceStep();
 
-    void SetSwypeCode(SwypeCode &code) override;
+    void SetSwypeCode(const SwypeCode &code) override;
 
     void Start(uint startTimestamp) override;
 
 private:
-    SwypeStep _nextStep = {0, 0, 0};
-    bool _useSwypeCode = false;
+    SwypeStep _nextStep;
+    bool _useSwypeCode;
 };
 
 

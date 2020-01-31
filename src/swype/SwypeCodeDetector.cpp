@@ -7,16 +7,16 @@
 #include "swype/swype_detect.h"
 
 
-unsigned int SwypeCodeDetector::counter = 0;
+unsigned int SwypeCodeDetector::_counter = 0;
 
 void SwypeCodeDetector::FillResult(int &status, int &index, int &x, int &y, int &message,
                                    int &debug) const {
-    x = (int) (_stepDetector._current.X() * 1024);
-    y = (int) (_stepDetector._current.Y() * 1024);
+    x = (int) (_stepDetector.GetCurrent().X() * 1024);
+    y = (int) (_stepDetector.GetCurrent().Y() * 1024);
 
-    debug = (int) (_stepDetector._current.DefectX() * 1024);
+    debug = (int) (_stepDetector.GetCurrent().DefectX() * 1024);
     debug = debug << 16;
-    debug += (int) (_stepDetector._current.DefectY() * 1024);
+    debug += (int) (_stepDetector.GetCurrent().DefectY() * 1024);
 
     FillResult(status, index, message);
 }
@@ -61,11 +61,11 @@ void SwypeCodeDetector::FillResult(int &status, int &index, int &message) const 
 }
 
 void SwypeCodeDetector::GetCurrentVector(float *point, float *defect) {
-    point[0] = static_cast<float>(_stepDetector._current.X());
-    point[1] = static_cast<float>(_stepDetector._current.Y());
+    point[0] = static_cast<float>(_stepDetector.GetCurrent().X());
+    point[1] = static_cast<float>(_stepDetector.GetCurrent().Y());
     if (defect != nullptr) {
-        defect[0] = _stepDetector._current.DefectX();
-        defect[1] = _stepDetector._current.DefectY();
+        defect[0] = _stepDetector.GetCurrent().DefectX();
+        defect[1] = _stepDetector.GetCurrent().DefectY();
     }
 }
 
@@ -77,7 +77,7 @@ void SwypeCodeDetector::Init(DetectorParameters parameters) {
 void
 SwypeCodeDetector::Init(SwypeCode &code, DetectorParameters parameters, unsigned int timestamp) {
     _code = code;
-    _relaxed = parameters._relaxed;
+    _relaxed = parameters.IsRelaxed();
     _stepDetector.Configure(parameters);
 
     SwypeStep step{0, code.DirectionAt(0), _code.TimeToInput()};
@@ -109,7 +109,7 @@ void SwypeCodeDetector::AdvanceSwypeStep() {
     _status = 0;
 }
 
-bool SwypeCodeDetector::IsInitialised() {
+bool SwypeCodeDetector::IsInitialised() const {
     return _currentStep.maxDurationMs > 0;
 }
 
@@ -121,7 +121,7 @@ void SwypeCodeDetector::Reset(bool resetSwypeCode) {
     }
 }
 
-void SwypeCodeDetector::SetSwypeCode(SwypeCode &code) {
+void SwypeCodeDetector::SetSwypeCode(const SwypeCode &code) {
     _code = code;
 }
 

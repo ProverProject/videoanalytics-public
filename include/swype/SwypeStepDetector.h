@@ -19,7 +19,7 @@
 
 class SwypeStepDetector {
 public:
-    SwypeStepDetector(unsigned int _id) : _id(_id) {}
+    SwypeStepDetector(unsigned int _id) : _id(_id), _count(0), _targetRadius(0) {}
 
     virtual void Add(VectorExplained);
 
@@ -57,18 +57,19 @@ public:
      */
     int CheckState(bool withDefect);
 
-    VectorExplained _current;
-
-    bool CheckCompleteStep(int direction, const std::vector<VectorExplained> &shifts);
+    inline const VectorExplained &GetCurrent() const {
+        return _current;
+    }
 
 private:
-    int _count = 0;
-    float _targetRadius = 0;
+    unsigned int _id;
+    int _count;
+    float _targetRadius;
     DetectorParameters _parameters;
     BoundsChecker _boundsChecker;
     VectorExplained _total;
     VectorExplained _target;
-    unsigned int _id;
+    VectorExplained _current;
 };
 
 

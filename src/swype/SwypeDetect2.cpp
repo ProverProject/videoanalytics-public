@@ -14,7 +14,7 @@ void SwypeDetect2::init(double sourceAspectRatio, int detectorWidth, int detecto
 
 void SwypeDetect2::Reset(bool resetSwypeCode) {
     _swypeDetector.Reset(resetSwypeCode);
-    _circleDetector.Reset();
+    _circleDetector.Clear();
     if (resetSwypeCode) {
         _swypeCodeSet = false;
         _state = DetectorState::WaitingForCode;
@@ -89,7 +89,7 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, DetectionRes
         result._state = _state;
     }
     result._timeToFailMs = TimeToFailMs();
-    if (logLevel & LOG_GENERAL_DETECTION && result._point != nullptr && shift.Mod() > 0.1) {
+    if (logLevel & LOG_GENERAL_DETECTION && result._point != nullptr && shift.Mod() > 0.05) {
         LOGI_NATIVE(
                 "state: %d, index: %d, msg: %d, phWeigths: %.2f, peaks: %.2f, ptc: %.2f, (%.2f, %.2f)(%.2f, %.2f)",
                 result._state, result._index, result._message,
@@ -154,5 +154,9 @@ void SwypeDetect2::OnIgnoringFrame(uint timestamp, DetectionResults &result) {
             result._state = _state;
             break;
     }
+}
+
+void SwypeDetect2::GetTargetForDirection(int direction, double *dst) {
+
 }
 

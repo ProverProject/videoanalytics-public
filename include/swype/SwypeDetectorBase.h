@@ -31,9 +31,7 @@ public:
     /**
        * check whether OpenCL is being used
        */
-    bool useOpenCL();
-
-    void setRelaxed(bool relaxed);
+    static bool useOpenCL() ;
 
 /**
  *

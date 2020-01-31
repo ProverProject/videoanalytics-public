@@ -19,22 +19,14 @@ bool SwypeDetectorBase::useOpenCL() {
     return cv::ocl::useOpenCL();
 }
 
-void SwypeDetectorBase::setRelaxed(bool relaxed) {
-    _shiftDetector.SetRelativeDefect(relaxed ? DEFECT : DEFECT_CLIENT);
-    _circleDetector.SetRelaxed(relaxed);
-    _detectorParameters.SetRelaxed(relaxed);
-
-    if (relaxed)
-        _histogtam.Configure(MIN_BRIGHTNESS_SERVER, MIN_CONTRAST_SERVER);
-    else
-        _histogtam.Configure(MIN_BRIGHTNESS_CLIENT, MIN_CONTRAST_CLIENT);
-}
-
-
 void SwypeDetectorBase::init(double sourceAspectRatio, int detectorWidth, int detectorHeight) {
-    _shiftDetector.SetDetectorSize(detectorWidth, detectorHeight, sourceAspectRatio);
-    //_debugComparer.SetShiftDetector(_shiftDetector);
-    setRelaxed(false);
+    _detectorParameters.SetRelaxed(false);
+    _detectorParameters.SetDetectorSize(detectorWidth, detectorHeight, sourceAspectRatio);
+    _detectorParameters.SetDetectorDetect(DEFECT_CLIENT);
+    _shiftDetector.Configure(_detectorParameters);
+    _circleDetector.SetRelaxed(false);
+
+    _histogtam.Configure(MIN_BRIGHTNESS_CLIENT, MIN_CONTRAST_CLIENT);
 }
 
 bool

@@ -10,19 +10,24 @@
 
 class Perimeter {
 public:
+    Perimeter() : _perimeter(0), _defect2(0) {}
+
     inline void Add(VectorExplained v) {
         _perimeter += v.Mod();
         float t = v.ModDefect();
         _defect2 += t * t;
     }
 
-    double _perimeter = 0;
+    double Value() const {
+        return _perimeter;
+    }
 
-    inline double GetDefect() const {
+    inline double Defect() const {
         return sqrt(_defect2);
     }
 
 private:
+    double _perimeter = 0;
     double _defect2 = 0;
 };
 

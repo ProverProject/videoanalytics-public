@@ -10,18 +10,20 @@
 #include "swype/VectorExplained.h"
 #include "PhaseCorrelatePeaks.h"
 #include "optimizedPhaseCorrelate.h"
+#include "DetectorParameters.h"
 
 class ShiftDetector {
 public:
-    friend class DebugComparer;
-
-    ShiftDetector() {
+    ShiftDetector() :
+            _tickTock(false),
+            _videoAspect(0.0),
+            _detectorWidth(0),
+            _detectorHeight(0),
+            _xMult(0.0),
+            _yMult(0.0),
+            _relativeDefect(0) {
         //LOGI_NATIVE("cv version: %s", CV_VERSION);
     };
-
-    ShiftDetector(const ShiftDetector &source);
-
-    void SetDetectorSize(int detectorWidth, int detectorHeight, double sourceAspectRatio);
 
     /**
      * detects shift;
@@ -35,19 +37,9 @@ public:
                      PhaseCorrelatePeaks *peaks = nullptr,
                      PhaseCorrelateDebugFrame *debugFrame = nullptr);
 
-    void SetPrevFrame(const cv::Mat &frame_i);
-
     VectorExplained ShiftToBaseFrame(const cv::Mat &frame, uint timestamp);
 
     void SetBaseFrame(const cv::Mat &frame);
-
-    inline void UpdateDetectorSize(int width, int height) {
-        if (_detectorWidth != width || _detecttorHeight != height) {
-            SetDetectorSize(width, height, _videoAspect);
-        }
-    }
-
-    void SetRelativeDefect(double defect);
 
     bool IsBaseFrameEmpty() const { return _tickFrame.empty(); };
 
@@ -56,8 +48,10 @@ public:
     }
 
     int GetHeight() const {
-        return _detecttorHeight;
+        return _detectorHeight;
     }
+
+    void Configure(const DetectorParameters &parameters);
 
 private:
     void log1(uint timestamp, cv::Point2d &shift, VectorExplained &scaledShift,
@@ -71,13 +65,13 @@ private:
 
     cv::UMat _tickFFT;
     cv::UMat _tockFFT;
-    bool _tickTock = false;
+    bool _tickTock;
 
-    double _videoAspect = 0.0;
-    int _detectorWidth = 0;
-    int _detecttorHeight = 0;
-    double _xMult = 0.0;
-    double _yMult = 0.0;
+    double _videoAspect;
+    int _detectorWidth;
+    int _detectorHeight;
+    double _xMult;
+    double _yMult;
 
     double _relativeDefect;// relaxed ? DEFECT : DEFECT_CLIENT
 };

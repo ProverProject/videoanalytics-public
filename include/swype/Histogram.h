@@ -37,7 +37,6 @@ public:
     }
 
     bool IsContrastLow() {
-        //LOGI_NATIVE("avg: %.2ff, contrast: %.6f", _avg255, contrast);
         return _contrast < _minContrast;
     }
 
@@ -71,13 +70,12 @@ private:
      * maximal luminosity present in image
      */
     int _max;
-    const double _f255 = 255;
 
     cv::Mat _window;
 
-    float _minContrast = 0;
+    float _minContrast;
 
-    float _minLuminanse = 0;
+    float _minLuminanse;
 
     /**
      * reset collected data
@@ -91,6 +89,8 @@ private:
     void EnsureWindow(const cv::Mat &frame);
 
     void CreateContrastWindow(const cv::_OutputArray &_dst, cv::Size winSize, int type);
+
+    static void CalculateGaussianWindow(double *target, int N, double sigma);
 };
 
 

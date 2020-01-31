@@ -145,7 +145,7 @@ bool BoundsChecker::CheckBounds(VectorExplained p) {
 }
 
 
-bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p) {
+bool BoundsChecker::CheckBoundsWithDefect(VectorExplained p)  {
     p.MulWithDefect(_turnMat);
 
     if (p.MinDistanceToWithDefect(_target) < BOUNDS_CHECKER_TARGET_SAFE_ZONE) {

@@ -6,23 +6,25 @@
 #include "swype/common.h"
 #include "swype/settings.h"
 
-ShiftDetector::ShiftDetector(const ShiftDetector &source) :
-        _videoAspect(source._videoAspect), _detectorWidth(source._detectorWidth),
-        _detecttorHeight(source._detecttorHeight), _xMult(source._xMult), _yMult(source._yMult),
-        _relativeDefect(source._relativeDefect) {
-}
 
-void
-ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sourceAspectRatio) {
-    _detectorWidth = detectorWidth;
-    _detecttorHeight = detectorHeight;
+void ShiftDetector::Configure(const DetectorParameters &parameters) {
+    _relativeDefect = parameters.DetectorDefect();
+
+    CV_Assert(parameters.DetectorWidth() > 0);
+    CV_Assert(parameters.DetectorHeight() > 0);
+    CV_Assert(parameters.SourceAspectRatio() > 0);
+
+    double sourceAspectRatio = parameters.SourceAspectRatio();
+
+    _detectorWidth = parameters.DetectorWidth();
+    _detectorHeight = parameters.DetectorHeight();
     _videoAspect = sourceAspectRatio > 1 ? sourceAspectRatio : 1.0 / sourceAspectRatio;
-    if (detectorWidth > detectorHeight) {
-        _yMult = -2.0 / detectorHeight;
-        _xMult = -2.0 / detectorWidth * _videoAspect;
+    if (_detectorWidth > _detectorHeight) {
+        _yMult = -2.0 / _detectorHeight;
+        _xMult = -2.0 / _detectorWidth * _videoAspect;
     } else {
-        _xMult = -2.0 / detectorWidth;
-        _yMult = -2.0 / detectorHeight * _videoAspect;
+        _xMult = -2.0 / _detectorWidth;
+        _yMult = -2.0 / _detectorHeight * _videoAspect;
     }
     _hannWithBorder.release();
     _tickFrame.release();
@@ -31,8 +33,8 @@ ShiftDetector::SetDetectorSize(int detectorWidth, int detectorHeight, double sou
     _tockFFT.release();
 
     if (logLevel > 0) {
-        LOGI_NATIVE("SetDetectorSize (%d, %d) sourceAspect %f, -> (%f, %f)", detectorWidth,
-                    detectorHeight, _videoAspect, _xMult, _yMult);
+        LOGI_NATIVE("Configure Shift detector (%d, %d) sourceAspect %f, -> (%f, %f)", _detectorWidth,
+                    _detectorHeight, _videoAspect, _xMult, _yMult);
     }
 }
 
@@ -78,26 +80,6 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
 
     return windowedShift;
 }
-
-/*
-    clock_gettime(CLOCK_REALTIME, &ts5);
-
-    double d1 = deltaTimeMks(ts2,ts1);
-    double d2 = deltaTimeMks(ts3,ts2);
-    double d3 = deltaTimeMks(ts4,ts3);
-    double d4 = deltaTimeMks(ts5,ts4);
-    double dAll = deltaTimeMks(ts5,ts1);
-    LOGI_NATIVE("ShiftToPrevFrame, mks: %.1lf; %.1lf; %.1lf; %.1lf; %.1lf\n", d1, d2, d3, d4, dAll);*/
-
-
-void ShiftDetector::SetPrevFrame(const cv::Mat &frame_i) {
-    if (_tickTock) {
-        frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
-    } else {
-        frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
-    }
-}
-
 
 void ShiftDetector::SetBaseFrame(const cv::Mat &frame) {
     frame.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
@@ -147,6 +129,3 @@ ShiftDetector::log2(uint timestamp, const cv::Point2d &shift, VectorExplained &s
             scaledShift.Direction());
 }
 
-void ShiftDetector::SetRelativeDefect(double defect) {
-    _relativeDefect = defect;
-}

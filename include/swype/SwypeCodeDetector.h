@@ -18,10 +18,17 @@ struct SwypeStep {
 
 class SwypeCodeDetector {
 public:
+    SwypeCodeDetector() : _id(++_counter),
+                          _status(2),
+                          _code(),
+                          _stepDetector(_id),
+                          _maxTimestamp(0),
+                          _currentStep{0, 0, 0},
+                          _relaxed(false),
+                          _startTimestamp(0),
+                          _currentTimestamp(0) {};
 
     virtual ~SwypeCodeDetector() {};
-
-    SwypeCodeDetector() : _id(++counter), _stepDetector(_id) {};
 
     void FillResult(int &status, int &index, int &x, int &y, int &message, int &debug) const;
 
@@ -34,6 +41,30 @@ public:
      */
     void GetCurrentVector(float *point, float *defect);
 
+    void Init(SwypeCode &code, DetectorParameters parameters, unsigned int timestamp);
+
+    void Init(DetectorParameters parameters);
+
+    void SetCurrentStep(SwypeStep step, unsigned int firstFrameTimestamp);
+
+    bool IsInitialised() const;
+
+    virtual void Reset(bool resetSwypeCode);
+
+    const SwypeStep &GetCurrentStep() const { return _currentStep; }
+
+    bool IsStepFinished() const { return _status == 1 || _status == 2; };
+
+    virtual void SetSwypeCode(const SwypeCode &code);
+
+    virtual void Start(uint startTimestamp);
+
+protected:
+
+    void AdvanceSwypeStep();
+
+    unsigned int _id;
+
     /*
      *    3 -- swype code not started (after circle, before swype code)
      *    2 -- swype code completed
@@ -43,47 +74,24 @@ public:
      *   -1 -- swype code failed
      *   -2 -- swype input timeout
      */
-    int _status = 2;
+    int _status;
 
-    unsigned int _id;
-
-    void Init(SwypeCode &code, DetectorParameters parameters, unsigned int timestamp);
-
-    void Init(DetectorParameters parameters);
-
-    void SetCurrentStep(SwypeStep step, unsigned int firstFrameTimestamp);
-
-    bool IsInitialised();
-
-    virtual void Reset(bool resetSwypeCode);
-
-    SwypeStep GetCurrentStep() { return _currentStep; };
-
-    bool IsStepFinished() { return _status == 1 || _status == 2; };
-
-    virtual void SetSwypeCode(SwypeCode &code);
-
-    virtual void Start(uint startTimestamp);
-
-protected:
-
-    void AdvanceSwypeStep();
-
-    SwypeCode _code{};
+    SwypeCode _code;
 
     SwypeStepDetector _stepDetector;
 
-    unsigned int _maxTimestamp = 0;
+    unsigned int _maxTimestamp;
 
-    SwypeStep _currentStep = {0, 0, 0};
+    SwypeStep _currentStep;
 
     bool _relaxed;
 
-    unsigned int _startTimestamp = 0;
+    unsigned int _startTimestamp;
 
-    unsigned int _currentTimestamp = 0;
+    unsigned int _currentTimestamp;
 
-    static unsigned int counter;
+    static unsigned int _counter;
+
 };
 
 

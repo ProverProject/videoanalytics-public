@@ -10,7 +10,10 @@
 
 class Area {
 public:
-    Area(const VectorExplained &v) : sum(v), sumPrev(v) {}
+    Area(const VectorExplained &v) : _area(0),
+                                     _defect2(0),
+                                     sum(v),
+                                     sumPrev(v) {}
 
     inline void AppendVector(const VectorExplained &v) {
         sum.Add(v);
@@ -26,18 +29,23 @@ public:
         sumPrev = sum;
     }
 
-    double _area = 0;
-
     inline double GetDefect() const {
         return sqrt(_defect2);
     }
 
-    VectorExplained sum;
+    double Get() const {
+        return fabs(_area);
+    }
+
+    const VectorExplained &Sum() const {
+        return sum;
+    }
 
 private:
-
+    double _area;
+    double _defect2;
+    VectorExplained sum;
     VectorExplained sumPrev;
-    double _defect2 = 0;
 };
 
 
