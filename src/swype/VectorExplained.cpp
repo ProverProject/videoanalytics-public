@@ -62,6 +62,8 @@ void VectorExplained::operator*=(double mul) {
     _x *= mul;
     _y *= mul;
     _mod *= fabs(mul);
+    _defectX *= mul;
+    _defectY *= mul;
     if (mul < 0) {
         _direction = _direction < 5 ? _direction + 4 : _direction - 4;
         _angle = _angle < 180 ? _angle + 180 : _angle - 180;

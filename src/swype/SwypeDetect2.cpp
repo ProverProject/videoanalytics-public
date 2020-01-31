@@ -43,6 +43,14 @@ void SwypeDetect2::AddNextStep(char direction, unsigned int maxDuration) {
 void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, DetectionResults &result) {
     if (shouldIgnoreFrame(frame, result)) {
         OnIgnoringFrame(timestamp, result);
+        if (logLevel & LOG_GENERAL_DETECTION && result._message != 0) {
+            LOGI_NATIVE(
+                    "PictureBad: %d, index: %d, msg: %d, lum: %.3f, con: %.3f",
+                    result._state, result._index, result._message,
+                    result._luminance,
+                    result._contrast
+            );
+        }
         return;
     }
 
