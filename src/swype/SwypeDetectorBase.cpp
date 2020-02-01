@@ -50,7 +50,8 @@ SwypeDetectorBase::DetectCircle(const VectorExplained &windowedShift, DetectionR
                                                             result._actualCircleCoordinates);
         } else {
             int tmp;
-            checkCircleResult = _circleDetector.CheckCircle(tmp);
+            float q;
+            checkCircleResult = _circleDetector.CheckCircle(tmp, q);
         }
         switch (checkCircleResult) {
             case CircleDetector::GotCircle:

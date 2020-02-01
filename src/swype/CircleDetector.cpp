@@ -19,9 +19,9 @@ void CircleDetector::AddShift(const VectorExplained &shift) {
         _total = SHIFTS;
 }
 
-bool CircleDetector::IsCircle() const {
+bool CircleDetector::IsCircle(float &quality) const {
     int temp;
-    return CheckCircle(temp) == Result::GotCircle;
+    return CheckCircle(temp, quality) == Result::GotCircle;
 }
 
 
@@ -29,7 +29,8 @@ CircleDetector::Result
 CircleDetector::CheckCircle(float *curveCoordinates, int coordinatesArrayLength,
                             int &writtenCoordinates) const {
     int sections = 0;
-    auto result = CheckCircle(sections);
+    float quality;
+    auto result = CheckCircle(sections, quality);
     if (sections > 0 && (sections * 2 + 2 <= coordinatesArrayLength)) {
         Vector current(0, 0);
         Vector sum(0, 0);
@@ -57,8 +58,7 @@ CircleDetector::CheckCircle(float *curveCoordinates, int coordinatesArrayLength,
     return result;
 }
 
-
-CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
+CircleDetector::Result CircleDetector::CheckCircle(int &curveLength, float &quality) const {
     int result = Result::NoCircle;
     curveLength = 0;
 
@@ -99,14 +99,19 @@ CircleDetector::Result CircleDetector::CheckCircle(int &curveLength) const {
 
                 if (logLevel & LOG_CIRCLE_DETECTION) {
                     bool gotCircle = areaVal >= _minCircleArea && aToPValue >= _minAreaByP2toCircle;
+                    float q = gotCircle ? std::max(Quality(area, MIN_CIRCLE_AREA), Quality(areaByP2ToCircle, MIN_AREA_BY_P2_TO_CIRCLE)) : 0;
                     LOGI_NATIVE(
-                            "IsCircle #%d vertices: %d, diff: %.4f-+%.4f (%.4f, %.4f) , area: %.4f+%.4f, areaByP2 to target: %.4f+%.4f, got: %d",
-                            timestamp, i + 1, sum.Mod(), sum.ModDefect(), sum.DefectX(), sum.DefectY(),
+                            "IsCircle #%d vertices: %d, diff: %.4f-+%.4f (%.4f, %.4f) , area: %.4f+%.4f, areaByP2 to target: %.4f+%.4f, got: %d, q: %.3f",
+                            timestamp, i + 1, sum.Mod(), sum.ModDefect(), sum.DefectX(),
+                            sum.DefectY(),
                             area.Value(), area.Defect(), areaByP2ToCircle.Value(),
-                            areaByP2ToCircle.Defect(), gotCircle);
+                            areaByP2ToCircle.Defect(), gotCircle, q);
                 }
 
                 if (areaVal >= _minCircleArea && aToPValue >= _minAreaByP2toCircle) {
+                    if (_relaxed) {
+                        quality = std::max(Quality(area, MIN_CIRCLE_AREA), Quality(areaByP2ToCircle, MIN_AREA_BY_P2_TO_CIRCLE));
+                    }
                     curveLength = i;
                     return Result::GotCircle;
                 }

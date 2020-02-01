@@ -91,7 +91,8 @@ void
 SwypeDetect::DetectCircle(const VectorExplained &windowedShift, uint timestamp) {
     if (windowedShift.Mod() > 0) {
         _circleDetector.AddShift(windowedShift);
-        if (_circleDetector.IsCircle()) {
+        float q;
+        if (_circleDetector.IsCircle(q)) {
             _detector.Init(_swypeCode, _detectorParameters, timestamp);
             _circleDetector.Clear();
             _state = DetectorState::WaitingToStartSwypeCode;

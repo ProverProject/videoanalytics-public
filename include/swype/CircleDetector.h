@@ -17,6 +17,7 @@
 #define MIN_REPORTABLE_CLOSED_POLYLINE 0.02
 #define MAX_DEVIATION 0.09
 #define MIN_AREA_BY_P2_TO_CIRCLE 0.67
+#define EPS 1e-6
 
 class CircleDetector {
 public:
@@ -49,7 +50,12 @@ public:
 
     void AddShift(const VectorExplained &shift);
 
-    bool IsCircle() const;
+    /**
+     * @param quality - [out] circle's quality measured to defect. only for detection with defect
+     *                  quality = 0 if circle matched without taking defect into account
+     * @return true if we've got circle
+     */
+    bool IsCircle(float &quality) const;
 
     /**
      * check if there is a circle or closed curve;
@@ -64,9 +70,10 @@ public:
     /**
      * check if there is a circle or closed curve
      * @param curveLength - [out] closed curve section count
+     * @param quality - [out] circle quality measured to defect. only for detection with defect
      * @return
      */
-    Result CheckCircle(int &curveLength) const;
+    Result CheckCircle(int &curveLength, float &quality) const;
 
     void SetRelaxed(bool relaxed);
 
@@ -86,6 +93,12 @@ private:
     double _maxDeviation;
     double _minAreaByP2toCircle;
     bool _relaxed;
+
+    static inline float Quality(const ValueWithDefect &value, double border) {
+        double q = value.Value() >= border || value.Defect() < EPS ? 0 :
+                   (border - value.Value()) / value.Defect();
+        return static_cast<float>(q);
+    }
 };
 
 
