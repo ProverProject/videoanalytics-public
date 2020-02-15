@@ -37,7 +37,9 @@
 #define ACTUAL_SWYPE_HELPER_VERSION 2
 #define ACTUAL_SWYPE_DETECTOR_VERSION 2
 
+#ifdef __linux__
 double deltaTimeMks(const struct timespec &ts2, const struct timespec &ts1);
+#endif
 
 enum Message {
     /**
