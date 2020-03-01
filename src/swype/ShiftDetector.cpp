@@ -76,6 +76,19 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
     }
     if (peaks != nullptr) {
         peaks->Set(peak, peak2);
+
+        if (logLevel & LOG_PHASE_CORRELATE) {
+            LOGI_NATIVE(
+                    "PhaseCorrelate #%d phWeigths: %.1f, peaks: %.1f, ptc: %.1f, p1: (%.1f,%.1f)%.2f p2: (%.1f,%.1f)%.2f, bad: %d",
+                    timestamp,
+                    peaks->WeightedCentroidRatio(),
+                    peaks->PeakRatio(),
+                    peaks->PeakToCentroid(),
+                    peak.x, peak.y, peak._weightedCentroid,
+                    peak2.x, peak2.y, peak2._weightedCentroid,
+                    peaks->IsPhaseCorrelateBad()
+            );
+        }
     }
 
     return windowedShift;

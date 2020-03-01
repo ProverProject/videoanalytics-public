@@ -177,13 +177,13 @@ public:
                                                static_cast<float>(other.X()),
                                                static_cast<float>(other.Y()));
 #endif
-        if (logLevel & LOG_VECTORS) {
+/*        if (logLevel & LOG_VECTORS) {
             LOGI_NATIVE(
                     "DistanceWithDefect (%.4f %.4f) +-(%.4f %.4f) shifted (%.4f, %.4f) to (%.4f, %.4f) distance = %.4f",
                     _x, _y, _defectX, _defectY, shifted.X(), shifted.Y(), other.X(), other.Y(),
                     shifted.DistanceTo(other)
             );
-        }
+        }*/
         return shifted.DistanceTo(other);
 /*        double dx = fabs(other._x - _x);
         double dy = fabs(other._y - _y);
