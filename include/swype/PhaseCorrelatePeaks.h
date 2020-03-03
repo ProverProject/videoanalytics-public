@@ -46,15 +46,19 @@ public:
         double peakRatio = PeakRatio();
         double  ptc = PeakToCentroid();
 
+        return IsPhaseCorrelateBad(peakRatio, wCentrRatio, ptc);
+    }
+
+    inline bool IsPhaseCorrelateBad(double peakRatio, double wCentrRatio, double ptc) const {
         if (wCentrRatio < -0.2 || wCentrRatio > 0.5 || peakRatio > 0.8)
             return true;
         if (fabs(wCentrRatio) < 0.2)
             return false;
 
         return wCentrRatio < -0.2
-                || ptc < 0
-                || peakRatio > 0.7
-                || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
+               || ptc < 0
+               || peakRatio > 0.7
+               || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
     }
 
     inline double PeakRatio() const {
