@@ -29,15 +29,15 @@ void SwypeDetect2::SetFirstStep(char direction, unsigned int maxDuration) {
 }
 
 void SwypeDetect2::AddNextStep(char direction, unsigned int maxDuration) {
-    _swypeCodeSet = true;
-    if (_swypeDetector.GetCurrentStep().direction == 0) {
-        _swypeDetector.SetCurrentStep(SwypeStep{0, direction, maxDuration}, 0);
-        _swypeCodeSet = true;
-        _state = DetectorState::WaitingForCircle;
-    } else {
+    if (_swypeCodeSet) {
         unsigned int num = _swypeDetector.GetCurrentStep().number;
         _swypeDetector.SetNextStep(SwypeStep{num + 1, direction, maxDuration});
+        LOGI_NATIVE("Added next step: %d(%d)", num + 1, direction);
+    } else {
+        _swypeDetector.SetCurrentStep(SwypeStep{0, direction, maxDuration}, 0);
+        _state = DetectorState::WaitingForCircle;
     }
+    _swypeCodeSet = true;
 }
 
 void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, DetectionResults &result) {
