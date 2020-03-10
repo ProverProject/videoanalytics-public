@@ -35,22 +35,29 @@ class PhaseCorrelatePeaks {
      */
     Peak _secondPeak;
 
+    double _noise;
+
 public:
     void Set(Peak main, Peak second) {
         _peak = main;
         _secondPeak = second;
     }
 
+    void SetNoise(double noise) {
+        _noise = noise;
+    }
+
     inline bool IsPhaseCorrelateBad() const {
         double wCentrRatio = WeightedCentroidRatio();
         double peakRatio = PeakRatio();
-        double  ptc = PeakToCentroid();
+        double ptc = PeakToCentroid();
 
         return IsPhaseCorrelateBad(peakRatio, wCentrRatio, ptc);
     }
 
     inline bool IsPhaseCorrelateBad(double peakRatio, double wCentrRatio, double ptc) const {
-        if (wCentrRatio < -0.2 || wCentrRatio > 0.5 || peakRatio > 0.8)
+        return _noise == 0 ? false : _peak._value / _noise < 16;
+        /*if (wCentrRatio < -0.2 || wCentrRatio > 0.5 || peakRatio > 0.8)
             return true;
         if (fabs(wCentrRatio) < 0.2)
             return false;
@@ -58,7 +65,7 @@ public:
         return wCentrRatio < -0.2
                || ptc < 0
                || peakRatio > 0.7
-               || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
+               || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;*/
     }
 
     inline double PeakRatio() const {
@@ -79,6 +86,10 @@ public:
 
     inline const Peak &getSecondPeak() const {
         return _secondPeak;
+    }
+
+    double getNoise() const {
+        return _noise;
     }
 };
 

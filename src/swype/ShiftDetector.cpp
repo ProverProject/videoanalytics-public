@@ -33,14 +33,14 @@ void ShiftDetector::Configure(const DetectorParameters &parameters) {
     _tockFFT.release();
 
     if (logLevel > 0) {
-        LOGI_NATIVE("Configure Shift detector (%d, %d) sourceAspect %f, -> (%f, %f)", _detectorWidth,
-                    _detectorHeight, _videoAspect, _xMult, _yMult);
+        LOGI_NATIVE("Configure Shift detector (%d, %d) sourceAspect %f, -> (%f, %f)",
+                    _detectorWidth, _detectorHeight, _videoAspect, _xMult, _yMult);
     }
 }
 
 VectorExplained
 ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
-                                PhaseCorrelatePeaks *peaks,
+                                PhaseCorrelatePeaks &peaks,
                                 PhaseCorrelateDebugFrame *debugFrame) {
     if (_tickFrame.empty()) {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
@@ -53,42 +53,41 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
         return {0, 0};
     }
 
-    Peak peak, peak2;
-
     _tickTock = !_tickTock;
     if (_tickTock) {
         frame_i.convertTo(_tockFrame, CV_64F);// converting frames to CV_64F type
         doFFT(_tockFrame, _hannWithBorder, _tockFFT);
-        myPhaseCorrelatePart2(_tickFFT, _tockFFT, peak, &peak2, debugFrame);
+        myPhaseCorrelatePart2(_tickFFT, _tockFFT, peaks, debugFrame);
     } else {
         frame_i.convertTo(_tickFrame, CV_64F);// converting frames to CV_64F type
         doFFT(_tickFrame, _hannWithBorder, _tickFFT);
         // we calculate a phase offset vector
-        myPhaseCorrelatePart2(_tockFFT, _tickFFT, peak, &peak2, debugFrame);
+        myPhaseCorrelatePart2(_tockFFT, _tickFFT, peaks, debugFrame);
     }
-    VectorExplained scaledShift(peak, _xMult, _yMult, timestamp);
+    VectorExplained scaledShift(peaks.getPeak(), _xMult, _yMult, timestamp);
     VectorExplained windowedShift = scaledShift;
     windowedShift.ApplyWindow(VECTOR_WINDOW_START, VECTOR_WINDOW_END);
     windowedShift.setRelativeDefect(_relativeDefect);
 
     if (logLevel & LOG_VECTORS) {
-        log1(timestamp, peak, scaledShift, windowedShift);
+        log1(timestamp, peaks.getPeak(), scaledShift, windowedShift);
     }
-    if (peaks != nullptr) {
-        peaks->Set(peak, peak2);
 
-        if (logLevel & LOG_PHASE_CORRELATE) {
-            LOGI_NATIVE(
-                    "PhaseCorrelate #%d phWeigths: %.1f, peaks: %.1f, ptc: %.1f, p1: (%.1f,%.1f)%.2f p2: (%.1f,%.1f)%.2f, bad: %d",
-                    timestamp,
-                    peaks->WeightedCentroidRatio(),
-                    peaks->PeakRatio(),
-                    peaks->PeakToCentroid(),
-                    peak.x, peak.y, peak._weightedCentroid,
-                    peak2.x, peak2.y, peak2._weightedCentroid,
-                    peaks->IsPhaseCorrelateBad()
-            );
-        }
+    if (logLevel & LOG_PHASE_CORRELATE) {
+        Peak peak = peaks.getPeak();
+        Peak peak2 = peaks.getSecondPeak();
+        double w = peak._value;
+        LOGI_NATIVE(
+                "PhaseCorrelate #%d phWeigths: %.1f, peaks: %.1f, ptc: %.1f, p1: (%.1f,%.1f)%.2f p2: (%.1f,%.1f)%.2f, bad: %d, noise: %f",
+                timestamp,
+                peaks.WeightedCentroidRatio(),
+                peaks.PeakRatio(),
+                peaks.PeakToCentroid(),
+                peak.x, peak.y, peak._weightedCentroid,
+                peak2.x, peak2.y, peak2._weightedCentroid,
+                peaks.IsPhaseCorrelateBad(),
+                peaks.getNoise() / w
+        );
     }
 
     return windowedShift;
@@ -122,7 +121,7 @@ VectorExplained ShiftDetector::ShiftToBaseFrame(const cv::Mat &frame, uint times
 }
 
 
-void ShiftDetector::log1(uint timestamp, cv::Point2d &shift, VectorExplained &scaledShift,
+void ShiftDetector::log1(uint timestamp, const cv::Point2d &shift, VectorExplained &scaledShift,
                          VectorExplained &windowedShift) const {
     LOGI_NATIVE(
             "detector t%d shift (%+6.2f,%+6.2f), scaled |%+.4f,%+.4f|=%.4f windowed |%+.4f,%+.4f|=%.4f_%3.0f_%d",

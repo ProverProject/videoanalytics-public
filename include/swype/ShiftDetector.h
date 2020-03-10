@@ -34,7 +34,7 @@ public:
 
     VectorExplained
     ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
-                     PhaseCorrelatePeaks *peaks = nullptr,
+                     PhaseCorrelatePeaks &peaks,
                      PhaseCorrelateDebugFrame *debugFrame = nullptr);
 
     VectorExplained ShiftToBaseFrame(const cv::Mat &frame, uint timestamp);
@@ -54,7 +54,7 @@ public:
     void Configure(const DetectorParameters &parameters);
 
 private:
-    void log1(uint timestamp, cv::Point2d &shift, VectorExplained &scaledShift,
+    void log1(uint timestamp, const cv::Point2d &shift, VectorExplained &scaledShift,
               VectorExplained &windowedShift) const;
 
     void log2(uint timestamp, const cv::Point2d &shift, VectorExplained &scaledShift) const;

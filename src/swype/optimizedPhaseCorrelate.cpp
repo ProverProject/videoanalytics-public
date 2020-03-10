@@ -599,8 +599,27 @@ Peak getPeak(cv::Point &peakLoc, cv::InputArray _src) {
 }
 
 template<class _Tp>
+double calculateNoise(cv::InputArray _src) {
+    cv::Mat src = _src.getMat();
+
+    double sqrSum = 0;
+    int size = src.cols * src.rows;
+
+    const _Tp *dataIn = src.ptr<_Tp>();
+
+    double value;
+    for (int i = 0; i < size; ++i) {
+        value = *dataIn;
+        sqrSum += value * value;
+        ++dataIn;
+    }
+
+    return sqrt(sqrSum / size);
+}
+
+template<class _Tp>
 void myPhaseCorrelatePart2T(cv::InputArray _FFT1, cv::InputArray _FFT2,
-                            Peak &peak1, Peak *peak2,
+                            PhaseCorrelatePeaks &peaks,
                             PhaseCorrelateDebugFrame *debugFrame) {
     cv::UMat FFT1 = _FFT1.getUMat();
     cv::UMat FFT2 = _FFT2.getUMat();
@@ -616,27 +635,31 @@ void myPhaseCorrelatePart2T(cv::InputArray _FFT1, cv::InputArray _FFT2,
 
     fftShift(C); // shift the energy to the center of the frame.
 
+    // copy Phase Correlate frame to debug output if should
+    if (debugFrame != nullptr) {
+        copyScaled<_Tp>(C, peaks.getPeak()._value, debugFrame);
+    }
+
     // locate the highest peak
     cv::Point peakLoc;
     minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc);
-    peak1 = getPeak<_Tp>(peakLoc, C);
+    Peak peak1 = getPeak<_Tp>(peakLoc, C);
 
-    if (peak2 != nullptr) {
-        double tmp[ERASE_PEAK_SIZE * ERASE_PEAK_SIZE];
-        cv::Point peakLoc2;
-        eraseAndStore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
-        minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc2);
-        restore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
-        *peak2 = getPeak<_Tp>(peakLoc2, C);
-    }
+    double tmp[ERASE_PEAK_SIZE * ERASE_PEAK_SIZE];
+    eraseAndStore<_Tp>(C, peakLoc, 5, tmp);
+    peaks.SetNoise(calculateNoise<_Tp>(C));
+    restore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
 
-    if (debugFrame != nullptr) {
-        copyScaled<_Tp>(C, peak1._value, debugFrame);
-    }
+    eraseAndStore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+    cv::Point peakLoc2;
+    minMaxLoc(C, nullptr, nullptr, nullptr, &peakLoc2);
+    restore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+    Peak peak2 = getPeak<_Tp>(peakLoc2, C);
+    peaks.Set(peak1, peak2);
 }
 
 void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
-                           Peak &peak1, Peak *peak2,
+                           PhaseCorrelatePeaks &peaks,
                            PhaseCorrelateDebugFrame *debugFrame) {
     int type = _FFT1.type();
 
@@ -644,9 +667,9 @@ void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
     CV_Assert(_FFT1.size() == _FFT2.size());
 
     if (type == CV_32FC1) {
-        myPhaseCorrelatePart2T<float>(_FFT1, _FFT2, peak1, peak2, debugFrame);
+        myPhaseCorrelatePart2T<float>(_FFT1, _FFT2, peaks, debugFrame);
     } else if (type == CV_64FC1) {
-        myPhaseCorrelatePart2T<double>(_FFT1, _FFT2, peak1, peak2, debugFrame);
+        myPhaseCorrelatePart2T<double>(_FFT1, _FFT2, peaks, debugFrame);
     } else {
         CV_Assert(type == CV_32FC1 || type == CV_64FC1);
     }

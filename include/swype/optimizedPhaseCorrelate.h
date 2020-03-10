@@ -25,7 +25,7 @@ void doPaddedWindow(cv::InputArray _src, cv::OutputArray _dst);
 void doFFT(cv::InputArray _src, cv::InputArray _paddedWindow, cv::OutputArray _dst);
 
 void myPhaseCorrelatePart2(cv::InputArray _FFT1, cv::InputArray _FFT2,
-                           Peak &peak1, Peak *peak2 = nullptr,
+                           PhaseCorrelatePeaks &peaks,
                            PhaseCorrelateDebugFrame *debugFrame = nullptr);
 
 #endif //PROVER_OPTIMIZEDPHASECORRELATE_H

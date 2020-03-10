@@ -33,7 +33,8 @@ SwypeDetect::processMat(const Mat &frame, const uint timestamp, int &state, int 
         return;
     }
 
-    VectorExplained windowedShift = _shiftDetector.ShiftToPrevFrame(frame, timestamp);
+    PhaseCorrelatePeaks peaks;
+    VectorExplained windowedShift = _shiftDetector.ShiftToPrevFrame(frame, timestamp, peaks);
 
     if (_state == DetectorState::WaitingForCircle) {
         DetectCircle(windowedShift, timestamp);
@@ -111,7 +112,8 @@ void SwypeDetect::processMatExt(const cv::Mat &frame, uint timestamp, int &state
         return;
     }
 
-    VectorExplained windowedShift = _shiftDetector.ShiftToPrevFrame(frame, timestamp);
+    PhaseCorrelatePeaks peaks;
+    VectorExplained windowedShift = _shiftDetector.ShiftToPrevFrame(frame, timestamp, peaks);
     if (shift != nullptr) {
         windowedShift.toFloatArray(shift);
     }

@@ -54,7 +54,7 @@ void SwypeDetect2::ProcessMat(const cv::Mat &frame, uint timestamp, DetectionRes
         return;
     }
 
-    VectorExplained shift = _shiftDetector.ShiftToPrevFrame(frame, timestamp, &result._peaks,
+    VectorExplained shift = _shiftDetector.ShiftToPrevFrame(frame, timestamp, result._peaks,
                                                             result._correlatedFrame);
 
     if (result._peaks.IsPhaseCorrelateBad()) {
