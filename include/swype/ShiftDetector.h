@@ -37,6 +37,12 @@ public:
                      PhaseCorrelatePeaks &peaks,
                      PhaseCorrelateDebugFrame *debugFrame = nullptr);
 
+    VectorExplained
+    ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp){
+        PhaseCorrelatePeaks peaks;
+        return ShiftToPrevFrame(frame_i, timestamp, peaks);
+    }
+
     VectorExplained ShiftToBaseFrame(const cv::Mat &frame, uint timestamp);
 
     void SetBaseFrame(const cv::Mat &frame);
