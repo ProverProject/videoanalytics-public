@@ -78,7 +78,7 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
         Peak peak2 = peaks.getSecondPeak();
         double w = peak._value;
         LOGI_NATIVE(
-                "PhaseCorrelate #%d phWeigths: %.1f, peaks: %.1f, ptc: %.1f, p1: (%.1f,%.1f)%.2f p2: (%.1f,%.1f)%.2f, bad: %d, noise: %f",
+                "PhaseCorrelate #%d WCentrRatio: %.3f, peaks: %.3f, ptc: %.1f, p1: (%.1f,%.1f)%.2f p2: (%.1f,%.1f)%.2f, bad: %d, sig/noi: %.0f",
                 timestamp,
                 peaks.WeightedCentroidRatio(),
                 peaks.PeakRatio(),
@@ -86,7 +86,7 @@ ShiftDetector::ShiftToPrevFrame(const cv::Mat &frame_i, uint timestamp,
                 peak.x, peak.y, peak._weightedCentroid,
                 peak2.x, peak2.y, peak2._weightedCentroid,
                 peaks.IsPhaseCorrelateBad(),
-                peaks.getNoise() / w
+                w / peaks.getNoise()
         );
     }
 
