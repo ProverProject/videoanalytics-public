@@ -56,16 +56,15 @@ public:
     }
 
     inline bool IsPhaseCorrelateBad(double peakRatio, double wCentrRatio, double ptc) const {
-        return _noise == 0 ? false : _peak._value / _noise < 16;
-        /*if (wCentrRatio < -0.2 || wCentrRatio > 0.5 || peakRatio > 0.8)
+        if (_noise != 0 && _peak._value / _noise < 18) {
             return true;
-        if (fabs(wCentrRatio) < 0.2)
-            return false;
+        }
 
-        return wCentrRatio < -0.2
-               || ptc < 0
-               || peakRatio > 0.7
-               || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;*/
+        return ptc < 0
+               || wCentrRatio < -0.2
+               || wCentrRatio > 0.5
+               || peakRatio > 0.5
+               || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
     }
 
     inline double PeakRatio() const {
