@@ -56,9 +56,14 @@ public:
     }
 
     inline bool IsPhaseCorrelateBad(double peakRatio, double wCentrRatio, double ptc) const {
-        if (_noise != 0 && _peak._value / _noise < 18) {
-            return true;
+        if (_noise != 0) {
+            double sigToNoise = _peak._value / _noise;
+            if (sigToNoise > 150)
+                return false;
+            else if (sigToNoise < 22)
+                return true;
         }
+
 
         return ptc < 0
                || wCentrRatio < -0.2
