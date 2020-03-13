@@ -648,7 +648,7 @@ void myPhaseCorrelatePart2T(cv::InputArray _FFT1, cv::InputArray _FFT2,
     double tmp[ERASE_PEAK_SIZE * ERASE_PEAK_SIZE];
     eraseAndStore<_Tp>(C, peakLoc, 5, tmp);
     peaks.SetNoise(calculateNoise<_Tp>(C));
-    restore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
+    restore<_Tp>(C, peakLoc, 5, tmp);
 
     eraseAndStore<_Tp>(C, peakLoc, ERASE_PEAK_SIZE, tmp);
     cv::Point peakLoc2;

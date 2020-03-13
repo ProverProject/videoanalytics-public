@@ -67,7 +67,7 @@ public:
 
         return ptc < 0
                || wCentrRatio < -0.2
-               || wCentrRatio > 0.6
+               || wCentrRatio > 0.5
                || peakRatio > 0.5
                || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
     }
