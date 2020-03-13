@@ -60,7 +60,7 @@ public:
             double sigToNoise = _peak._value / _noise;
             if (sigToNoise > 150)
                 return false;
-            else if (sigToNoise < 22)
+            else if (sigToNoise < 25)
                 return true;
         }
 

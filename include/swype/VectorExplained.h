@@ -124,6 +124,11 @@ public:
         _defectY = fabsf((float) (_y * relativeDefect));
     }
 
+    void setDefect(float dx, float dy){
+        _defectX = dx;
+        _defectY = dy;
+    }
+
     inline Vector ShiftDefectEllipseToTouchLineMagnet() const {
         return ShiftEllipseToTouchLineMagnet(_defectX, _defectY);
     }
