@@ -60,7 +60,7 @@ public:
             double sigToNoise = _peak._value / _noise;
             if (sigToNoise > 150)
                 return false;
-            else if (sigToNoise < 25)
+            else if (sigToNoise < 24)
                 return true;
         }
 
@@ -68,7 +68,7 @@ public:
         return ptc < 0
                || wCentrRatio < -0.2
                || wCentrRatio > 0.5
-               || peakRatio > 0.5
+               || peakRatio > 0.4
                || fabs(peakRatio * ptc * wCentrRatio) >= 0.03;
     }
 

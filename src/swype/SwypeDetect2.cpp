@@ -137,8 +137,11 @@ void SwypeDetect2::OnIgnoringFrame(uint timestamp, DetectionResults &result) {
     }
 
     switch (_state) {
-        case DetectorState::WaitingToStartSwypeCode:
         case DetectorState::DetectingSwypeCode:
+            result._index = _swypeDetector.GetCurrentStep().number + 1;
+            //no break here by intent
+
+        case DetectorState::WaitingToStartSwypeCode:
 #ifdef RESET_DETECTOR_ON_BAD_PICTURE
             _state = result._state = DetectorState::WaitingForCircle;
 #else
