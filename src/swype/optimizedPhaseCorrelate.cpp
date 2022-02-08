@@ -35,6 +35,7 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
+#include <opencv2/core/version.hpp>
 #include "swype/common.h"
 #include "swype/optimizedPhaseCorrelate.h"
 
@@ -181,6 +182,14 @@ static void magSpectrums(cv::InputArray _src, cv::OutputArray _dst) {
     }
 }
 
+// The function below is taken from internals of opencv. Since opencv-4.5.3 it's exported,
+// and compiler can't choose between two (identical) functions with identical signatures.
+// Let's just turn off our implementation if opencv version is new enough (4.5.3 and above).
+//
+//                                                                  -- Blashyrkh, 2022-02-08
+
+#define OPENCV_VERSION (1000000*(CV_VERSION_MAJOR)+1000*(CV_VERSION_MINOR)+CV_VERSION_REVISION)
+#if OPENCV_VERSION<4005003
 static void
 divSpectrums(cv::InputArray _srcA, cv::InputArray _srcB, cv::OutputArray _dst, int flags,
              bool conjB) {
@@ -367,6 +376,7 @@ divSpectrums(cv::InputArray _srcA, cv::InputArray _srcB, cv::OutputArray _dst, i
         }
     }
 }
+#endif
 
 static void fftShift(cv::InputOutputArray _out) {
     cv::Mat out = _out.getMat();
